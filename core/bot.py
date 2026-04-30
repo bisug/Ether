@@ -139,7 +139,6 @@ async def inline_help(event):
                         buttons = button_rows
                         logger.info(f"Total button rows: {len(button_rows)}")
                 
-                logger.info(f"Creating inline result with text length: {len(WELCOME_DATA['text'])}, image: {WELCOME_DATA['image']}")
                 
                 if WELCOME_DATA["image"]:
                     result = builder.photo(
@@ -548,11 +547,9 @@ bot_dm_buttons = [
 
 @bot.on(events.NewMessage(incoming=True))
 async def bot_debug_handler(event):
-    logger.info(f"DEBUG: Message received from {event.sender_id} in chat {event.chat_id}: {event.text[:50] if event.text else '[no text]'}")
 
 @bot.on(events.NewMessage(pattern=r"^/start$", incoming=True, func=lambda e: e.is_private))
 async def bot_start_handler(event):
-    logger.info(f"/start command received from user {event.sender_id}")
     try:
         await bot.send_file(
             event.chat_id,
@@ -561,7 +558,6 @@ async def bot_start_handler(event):
             buttons=bot_dm_buttons,
             parse_mode="html"
         )
-        logger.info(f"Bot /start reply sent to user {event.sender_id}")
 
     except Exception as e:
         logger.error(f"Bot /start reply failed: {e}", exc_info=True)
@@ -938,9 +934,7 @@ class EtherBot:
             # Add timeout to connection
             await asyncio.wait_for(bot.start(bot_token=self.token), timeout=30)
             
-            logger.info("Bot.start() completed successfully")
             logger.info("Bot connected successfully - waiting for messages...")
-            logger.info("Event handlers registered - ready to receive commands")
             await bot.run_until_disconnected()
         except asyncio.TimeoutError:
             logger.error("Bot connection timed out after 30 seconds")
