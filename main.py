@@ -111,14 +111,15 @@ async def startup():
     logger.info("Ether Hybrid System Starting")
     logger.info("=" * 50)
     
-    # Start bot and userbot concurrently
-    userbot_task = asyncio.create_task(run_userbot())
+    # Start bot first - it should always run for /login
     bot_task = asyncio.create_task(run_bot())
+    
+    userbot_task = asyncio.create_task(run_userbot())
     
     try:
         await bot_task
     except Exception as e:
-        logger.error(f"Bot task failed: {e}")
+        logger.error(f"Bot task failed: {e}", exc_info=True)
     finally:
         # Cancel userbot if bot stops
         if not userbot_task.done():
