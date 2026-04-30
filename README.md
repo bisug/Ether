@@ -196,15 +196,15 @@ Follow the Quickstart guide above for local deployment.
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Python 3.9+
+# Install Python 3.9+ or higher (Tested on Python 3.12)
 sudo apt install python3.9 python3-pip python3-venv -y
 
 # Clone repository
 git clone https://github.com/LearningBotsOfficial/Ether.git
 cd Ether
 
-# Create and activate virtual environment
-python3.9 -m venv venv
+# Create and activate virtual environment 
+python3.9 -m venv venv  # or higher (Tested on Python 3.12)
 source venv/bin/activate
 
 # Install dependencies
