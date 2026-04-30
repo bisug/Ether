@@ -111,11 +111,22 @@ async def startup():
     logger.info("Ether Hybrid System Starting")
     logger.info("=" * 50)
     
-    await asyncio.gather(
-        run_userbot(),
-        run_bot(),
-        return_exceptions=True
-    )
+    # Start bot and userbot concurrently
+    userbot_task = asyncio.create_task(run_userbot())
+    bot_task = asyncio.create_task(run_bot())
+    
+    try:
+        await bot_task
+    except Exception as e:
+        logger.error(f"Bot task failed: {e}")
+    finally:
+        # Cancel userbot if bot stops
+        if not userbot_task.done():
+            userbot_task.cancel()
+            try:
+                await userbot_task
+            except asyncio.CancelledError:
+                pass
 
 
 async def shutdown():
