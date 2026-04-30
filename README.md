@@ -224,7 +224,7 @@ python main.py
 ## 🤝 Community & Support
 
 <p align="center">
-  <a href="https://t.me/EtherUserbot">
+  <a href="https://t.me/Ether_Update">
     <img src="https://img.shields.io/badge/🚀%20Ether%20Userbot-Official%20Channel-5865F2?style=for-the-badge&logo=telegram">
   </a>
   <a href="https://t.me/EtherSupport">

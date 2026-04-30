@@ -7,7 +7,7 @@
 #  Repository:    https://github.com/LearningBotsOfficial/Ether
 #
 #  Support:       https://t.me/Ether_Support
-#  Channel:       https://t.me/EtherUserbot
+#  Channel:       https://t.me/Ether_Update
 #
 #  License:       Open Source (Keep Credits)
 #

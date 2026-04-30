@@ -7,7 +7,7 @@
 #  Repository:    https://github.com/LearningBotsOfficial/Ether
 #
 #  Support:       https://t.me/Ether_Support
-#  Channel:       https://t.me/EtherUserbot
+#  Channel:       https://t.me/Ether_Update
 #
 #  License:       Open Source (Keep Credits)
 #
@@ -30,7 +30,7 @@ def setup(ether, db, owner_id):
 
     bot_username = Config.BOT_USERNAME or ""
 
-    ALIVE_IMAGE = r"C:\Users\yashk\OneDrive\Desktop\Ether\assets\ether_logo.png"
+    ALIVE_IMAGE = "assets/ether_logo.png"
 
     @ether.on(events.NewMessage(pattern=r"^\.alive$", outgoing=True))
     async def alive_handler(event):

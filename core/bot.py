@@ -7,7 +7,7 @@
 #  Repository:    https://github.com/LearningBotsOfficial/Ether
 #
 #  Support:       https://t.me/Ether_Support
-#  Channel:       https://t.me/EtherUserbot
+#  Channel:       https://t.me/Ether_Update
 #
 #  License:       Open Source (Keep Credits)
 #
@@ -275,7 +275,7 @@ async def inline_help(event):
         builder = event.builder
     
         result = builder.photo(
-            file=r"C:\Users\yashk\OneDrive\Desktop\Ether\assets\ether_logo.png",
+            file="assets/ether_logo.png",
             text=(
                 "⚡ <b>Ether Userbot is Alive</b>\n\n"
                 "<blockquote>"
@@ -530,11 +530,11 @@ BOT_WELCOME_TEXT = (
     "🚀 Manage Telegram like a pro.\n"
 )
 
-BOT_WELCOME_IMAGE = r"C:\Users\yashk\OneDrive\Desktop\Ether\assets\ether_logo.png"
+BOT_WELCOME_IMAGE = "assets/ether_logo.png"
 
 bot_dm_buttons = [
     [
-        Button.url("📢 Updates", "https://t.me/EtherUserbot"),
+        Button.url("📢 Updates", "https://t.me/Ether_Update"),
         Button.url("💬 Support Group", "https://t.me/EtherSupport")
     ],
     [Button.url("📂 Source Code", "https://github.com/LearningBotsOfficial/Ether")],
@@ -547,17 +547,21 @@ bot_dm_buttons = [
 @bot.on(events.NewMessage(pattern=r"^/start$", incoming=True, func=lambda e: e.is_private))
 async def bot_start_handler(event):
     try:
-        await event.respond(
+        await bot.send_file(
+            event.chat_id,
             file=BOT_WELCOME_IMAGE,
-            message=BOT_WELCOME_TEXT,
+            caption=BOT_WELCOME_TEXT,
             buttons=bot_dm_buttons,
             parse_mode="html"
         )
         logger.info(f"Bot /start reply sent to user {event.sender_id}")
+
     except Exception as e:
         logger.error(f"Bot /start reply failed: {e}")
+
         try:
-            await event.respond(
+            await bot.send_message(
+                event.chat_id,
                 BOT_WELCOME_TEXT,
                 buttons=bot_dm_buttons,
                 parse_mode="html"
