@@ -544,8 +544,13 @@ bot_dm_buttons = [
 # Bot Start Handler
 # ============================================
 
+@bot.on(events.NewMessage(incoming=True))
+async def bot_debug_handler(event):
+    logger.info(f"DEBUG: Message received from {event.sender_id} in chat {event.chat_id}: {event.text[:50] if event.text else '[no text]'}")
+
 @bot.on(events.NewMessage(pattern=r"^/start$", incoming=True, func=lambda e: e.is_private))
 async def bot_start_handler(event):
+    logger.info(f"/start command received from user {event.sender_id}")
     try:
         await bot.send_file(
             event.chat_id,
@@ -557,7 +562,7 @@ async def bot_start_handler(event):
         logger.info(f"Bot /start reply sent to user {event.sender_id}")
 
     except Exception as e:
-        logger.error(f"Bot /start reply failed: {e}")
+        logger.error(f"Bot /start reply failed: {e}", exc_info=True)
 
         try:
             await bot.send_message(
@@ -566,8 +571,9 @@ async def bot_start_handler(event):
                 buttons=bot_dm_buttons,
                 parse_mode="html"
             )
+            logger.info(f"Bot /start fallback sent to user {event.sender_id}")
         except Exception as e2:
-            logger.error(f"Bot /start fallback failed: {e2}")
+            logger.error(f"Bot /start fallback failed: {e2}", exc_info=True)
 
 
 # ============================================
@@ -886,11 +892,13 @@ class EtherBot:
             return
         
         try:
+            logger.info(f"Attempting to start bot with token: {self.token[:20]}...")
             await bot.start(bot_token=self.token)
-            logger.info("Bot started")
+            logger.info(f"Bot connected successfully. Bot ID: {bot.me.id if bot.me else 'Unknown'}")
+            logger.info("Bot started - waiting for messages...")
             await bot.run_until_disconnected()
         except Exception as e:
-            logger.error(f"Bot error: {e}")
+            logger.error(f"Bot error: {e}", exc_info=True)
     
     async def stop(self) -> None:
         await bot.disconnect()
