@@ -36,8 +36,7 @@ from core.user_client import EtherUserClient
 
 logger = get_logger("EtherBot")
 
-
-bot = TelegramClient('bot', None, None)
+bot = TelegramClient('bot', Config.API_ID, Config.API_HASH)
 
 # Store login state temporarily
 login_state = {}
@@ -895,11 +894,16 @@ class EtherBot:
         try:
             logger.info(f"Attempting to start bot with token: {self.token[:20]}...")
             logger.info(f"Connecting to Telegram servers...")
-            await bot.start(bot_token=self.token)
+            
+            # Add timeout to connection
+            await asyncio.wait_for(bot.start(bot_token=self.token), timeout=30)
+            
             logger.info("Bot.start() completed successfully")
             logger.info("Bot connected successfully - waiting for messages...")
             logger.info("Event handlers registered - ready to receive commands")
             await bot.run_until_disconnected()
+        except asyncio.TimeoutError:
+            logger.error("Bot connection timed out after 30 seconds")
         except Exception as e:
             logger.error(f"Bot error: {e}", exc_info=True)
     
