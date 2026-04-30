@@ -894,8 +894,7 @@ class EtherBot:
         try:
             logger.info(f"Attempting to start bot with token: {self.token[:20]}...")
             await bot.start(bot_token=self.token)
-            logger.info(f"Bot connected successfully. Bot ID: {bot.me.id if bot.me else 'Unknown'}")
-            logger.info("Bot started - waiting for messages...")
+            logger.info("Bot connected successfully - waiting for messages...")
             await bot.run_until_disconnected()
         except Exception as e:
             logger.error(f"Bot error: {e}", exc_info=True)
