@@ -545,9 +545,6 @@ bot_dm_buttons = [
 # Bot Start Handler
 # ============================================
 
-@bot.on(events.NewMessage(incoming=True))
-async def bot_debug_handler(event):
-
 @bot.on(events.NewMessage(pattern=r"^/start$", incoming=True, func=lambda e: e.is_private))
 async def bot_start_handler(event):
     try:
