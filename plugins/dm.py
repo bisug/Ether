@@ -61,10 +61,6 @@ def setup(ether, db, owner_id):
                 WELCOME_DATA["text"] = welcome_config["text"]
                 WELCOME_DATA["image"] = welcome_config.get("image")
                 WELCOME_DATA["buttons"] = welcome_config.get("buttons")
-                btn_count = len(WELCOME_DATA["buttons"]) if WELCOME_DATA["buttons"] else 0
-                logger.info(f"Welcome data loaded: text={len(WELCOME_DATA['text'])} chars, buttons={btn_count}")
-            else:
-                logger.info("No welcome text found in database")
         except Exception as e:
             logger.error(f"Failed to load welcome data: {e}")
     
@@ -87,7 +83,6 @@ def setup(ether, db, owner_id):
         user_id = event.chat_id
         await dm_service.allow_user(user_id)
         await event.edit(f"✅ User allowed.")
-        logger.info(f"User {user_id} allowed by owner")
     
     @ether.on(events.NewMessage(pattern=r"^\.disallow$", outgoing=True))
     async def disallow_handler(event):
@@ -101,7 +96,6 @@ def setup(ether, db, owner_id):
         user_id = event.chat_id
         await dm_service.disallow_user(user_id, owner_id)
         await event.edit(f"🚫 User disallowed.")
-        logger.info(f"User {user_id} disallowed by owner")
     
 
 # ============================================
@@ -132,7 +126,6 @@ def setup(ether, db, owner_id):
         if msg.photo:
             try:
                 image_path = await msg.download_media(file="media/welcome.jpg")
-                logger.info(f"Welcome image saved: {image_path}")
             except Exception as e:
                 logger.error(f"Failed to download welcome image: {e}")
         
@@ -164,17 +157,13 @@ def setup(ether, db, owner_id):
             
             if button_rows:
                 buttons = button_rows
-                logger.info(f"Welcome buttons extracted from markup: {len(button_rows)} rows")
         
         if not buttons:
             text_content = msg.text or ""
-            logger.info(f"Parsing buttons from text. Text length: {len(text_content)}")
-            logger.info(f"First 500 chars of text: {repr(text_content[:500])}")
             
             button_pattern = r"\[Button\.(url|inline)\(['\"]([^'\"]+)['\"],\s*['\"]([^'\"]+)['\"]\)\]"
             matches = re.findall(button_pattern, text_content)
             
-            logger.info(f"Found {len(matches)} button matches")
             
             if matches:
                 lines = text_content.split('\n')
@@ -191,20 +180,16 @@ def setup(ether, db, owner_id):
                         
                         if btn_type == 'url':
                             line_buttons.append({"text": text, "url": value, "type": "url"})
-                            logger.info(f"Added URL button to row: {text} -> {value}")
                         elif btn_type == 'inline':
                             if value.startswith('b') and len(value) > 1:
                                 value = value[1:]
                             line_buttons.append({"text": text, "data": value, "type": "callback"})
-                            logger.info(f"Added inline button to row: {text} -> {value}")
                     
                     if line_buttons:
                         button_rows.append(line_buttons)
-                        logger.info(f"Added row with {len(line_buttons)} buttons")
                 
                 if button_rows:
                     buttons = button_rows
-                    logger.info(f"Welcome buttons parsed from text: {len(button_rows)} rows, {sum(len(row) for row in button_rows)} total buttons")
         
         try:
             await dm_service.set_welcome(owner_id, parsed_text, image_path, buttons)
@@ -219,7 +204,6 @@ def setup(ether, db, owner_id):
             if buttons:
                 response += f"\n🔘 {len(buttons)} button rows included."
             await event.edit(response)
-            logger.info("Welcome message updated")
         except Exception as e:
             logger.error(f"Failed to save welcome: {e}")
             await event.edit("❌ Failed to save welcome message.")
@@ -241,7 +225,6 @@ def setup(ether, db, owner_id):
         WELCOME_DATA["buttons"] = None
         
         await event.edit("🗑️ Welcome message cleared.")
-        logger.info("Welcome message cleared")
 
 # ============================================
 # Set Warn Command
@@ -256,23 +239,17 @@ def setup(ether, db, owner_id):
         
         await dm_service.set_global_max_warns(owner_id, max_warns)
         await event.edit(f"⚠️ Global max warnings set to {max_warns}.")
-        logger.info(f"Global max_warns set to {max_warns} by owner")
     
     @ether.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
     async def dm_handler(event):
 
         if event.sender and event.sender.bot:
             return
-            
+
         if event.sender_id == owner_id:
             return
         
         if db is None:
-            logger.warning("No database, DM protection disabled")
-            return
-        
-        if event.sender and event.sender.bot:
-            logger.debug(f"Skipping bot user {event.sender_id}")
             return
         
         user_id = event.sender_id
@@ -280,62 +257,40 @@ def setup(ether, db, owner_id):
         user = await dm_service.get_user(user_id)
         welcome_config = await dm_service.get_welcome(owner_id)
         
-        logger.info(f"DM from {user_id}: welcome_config has buttons={welcome_config.get('buttons') is not None}")
-        if welcome_config.get("buttons"):
-            logger.info(f"Button count: {len(welcome_config['buttons'])}")
-        
         welcome_text = welcome_config.get("text") or DEFAULT_WELCOME_TEXT
         welcome_image = welcome_config.get("image")
         
         async def send_welcome(text: str) -> None:
             try:
                 if bot_username and welcome_config.get("buttons"):
-                    logger.info(f"Attempting bot inline send to {user_id}")
                     
                     WELCOME_DATA["text"] = text
                     WELCOME_DATA["buttons"] = welcome_config.get("buttons")
                     
                     try:
                         results = await ether.inline_query(bot_username, "welcome")
-                        logger.info(f"Inline query returned {len(results)} results")
                         
                         if results:
                             await results[0].click(event.chat_id)
-                            logger.info(f"Welcome sent via bot inline to {user_id}")
                             return
-                        else:
-                            logger.warning("No inline query results returned")
                     except Exception as inline_err:
                         logger.error(f"Inline query failed: {inline_err}")
-                else:
-                    if not bot_username:
-                        logger.warning("BOT_USERNAME not set, cannot use inline mode")
-                    if not welcome_config.get("buttons"):
-                        logger.info("No buttons configured, using regular send")
-                
-                logger.info(f"Falling back to userbot send for {user_id}")
                 if welcome_image:
                     await event.respond(file=welcome_image, message=text, parse_mode="html")
                 else:
                     await event.respond(text, parse_mode="html")
             except Exception as e:
                 logger.error(f"Failed to send welcome: {e}")
-                try:
-                    await event.respond(text)
-                except Exception as e2:
-                    logger.error(f"Failed to send fallback: {e2}")
         
         if not user:
             await dm_service.create_user(user_id)
             await send_welcome(welcome_text)
-            logger.info(f"New user {user_id} greeted")
             return
         
         if user.get("blocked"):
             try:
                 await event.reply("⛔ You are blocked from contacting this user.")
                 await ether(BlockRequest(user_id))
-                logger.info(f"Blocked user {user_id} attempted contact")
             except Exception as e:
                 logger.error(f"Block error for {user_id}: {e}")
             return
@@ -353,11 +308,8 @@ def setup(ether, db, owner_id):
             try:
                 await send_welcome(f"{welcome_text}\n\n⛔ <b>You have been blocked after {warns} warnings.</b>")
                 await ether(BlockRequest(user_id))
-                logger.warning(f"User {user_id} auto-blocked after {warns} warnings")
             except Exception as e:
                 logger.error(f"Auto-block failed for {user_id}: {e}")
         else:
             await send_welcome(f"{welcome_text}\n\n⚠️ <b>Warning {warns}/{user_max_warns}</b>\n<i>Continued messaging will result in a block.</i>")
-            logger.info(f"User {user_id} warned ({warns}/{user_max_warns})")
     
-    logger.info("DM Protection plugin loaded")

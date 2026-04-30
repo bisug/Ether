@@ -56,7 +56,6 @@ def setup(ether, db, owner_id):
 
             if results:
                 await results[0].click(event.chat_id)
-                logger.info("Font inline sent")
             else:
                 await event.respond("❌ Inline failed.")
 

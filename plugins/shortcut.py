@@ -47,7 +47,6 @@ def setup(ether, db, owner_id):
     async def load_shortcuts_data():
         try:
             if db is None:
-                logger.warning("No database, skipping shortcut data load")
                 return
             
             shortcuts_collection = db["shortcuts"]
@@ -62,9 +61,7 @@ def setup(ether, db, owner_id):
                         "image": shortcut.get("image"),
                         "buttons": shortcut.get("buttons")
                     }
-                    logger.info(f"Loaded shortcut '{name}' into cache")
-            
-            logger.info(f"Loaded {len(SHORTCUT_DATA)} shortcuts from database")
+                    
         except Exception as e:
             logger.error(f"Failed to load shortcuts data: {e}")
     
@@ -102,7 +99,6 @@ def setup(ether, db, owner_id):
         if msg.photo:
             try:
                 image_path = await msg.download_media(file=f"media/shortcut_{name}.jpg")
-                logger.info(f"Shortcut image saved: {image_path}")
             except Exception as e:
                 logger.error(f"Failed to download shortcut image: {e}")
         
@@ -134,16 +130,13 @@ def setup(ether, db, owner_id):
             
             if button_rows:
                 buttons = button_rows
-                logger.info(f"Shortcut buttons extracted from markup: {len(button_rows)} rows")
         
         if not buttons:
             text_content = msg.text or ""
-            logger.info(f"Parsing buttons from text. Text length: {len(text_content)}")
             
             button_pattern = r"\[Button\.(url|inline)\(['\"]([^'\"]+)['\"],\s*['\"]([^'\"]+)['\"]\)\]"
             matches = re.findall(button_pattern, text_content)
             
-            logger.info(f"Found {len(matches)} button matches")
             
             if matches:
                 lines = text_content.split('\n')
@@ -160,19 +153,16 @@ def setup(ether, db, owner_id):
                         
                         if btn_type == 'url':
                             line_buttons.append({"text": text, "url": value, "type": "url"})
-                            logger.info(f"Added URL button to row: {text} -> {value}")
                         elif btn_type == 'inline':
                             if value.startswith('b') and len(value) > 1:
                                 value = value[1:]
                             line_buttons.append({"text": text, "data": value, "type": "callback"})
-                            logger.info(f"Added inline button to row: {text} -> {value}")
                     
                     if line_buttons:
                         button_rows.append(line_buttons)
                 
                 if button_rows:
                     buttons = button_rows
-                    logger.info(f"Shortcut buttons parsed from text: {len(button_rows)} rows")
         
         try:
             await shortcut_service.save_shortcut(owner_id, name, parsed_text, image_path, buttons)
@@ -189,7 +179,6 @@ def setup(ether, db, owner_id):
             if buttons:
                 response += f"\n🔘 {len(buttons)} button rows included."
             await event.edit(response)
-            logger.info(f"Shortcut '{name}' saved by owner")
         except Exception as e:
             logger.error(f"Failed to save shortcut: {e}")
             await event.edit("❌ Failed to save shortcut.")
@@ -210,7 +199,6 @@ def setup(ether, db, owner_id):
         
         if not shortcut:
             await event.reply(f"❌ Shortcut '{name}' not found.")
-            logger.info(f"Shortcut '{name}' not found")
             return
         
         text = shortcut.get("text", "")
@@ -222,43 +210,30 @@ def setup(ether, db, owner_id):
                 chat_id = target_chat or event.chat_id
                 
                 if bot_username and buttons:
-                    logger.info(f"Attempting bot inline send for shortcut '{name}'")
                     
                     try:
                         results = await ether.inline_query(bot_username, f"shortcut:{name.lower()}")
-                        logger.info(f"Inline query returned {len(results)} results")
                         
                         if results:
                             await results[0].click(chat_id)
-                            logger.info(f"Shortcut '{name}' sent via bot inline to {chat_id}")
                             return
-                        else:
-                            logger.warning("No inline query results returned")
                     except Exception as inline_err:
                         logger.error(f"Inline query failed: {inline_err}")
-                
-                logger.info(f"Falling back to userbot send for shortcut '{name}'")
                 if image:
                     await ether.send_file(chat_id, file=image, caption=text, parse_mode="html")
                 else:
                     await ether.send_message(chat_id, text, parse_mode="html")
             except Exception as e:
                 logger.error(f"Failed to send shortcut: {e}")
-                try:
-                    await ether.send_message(chat_id, text)
-                except Exception as e2:
-                    logger.error(f"Failed to send fallback: {e2}")
         
         if event.is_reply:
             reply_msg = await event.get_reply_message()
             target_chat = reply_msg.chat_id
             await send_shortcut_message(text, target_chat)
             await event.edit(f"✅ Shortcut '{name}' sent.")
-            logger.info(f"Shortcut '{name}' sent to chat {target_chat}")
         else:
             await send_shortcut_message(text)
             await event.edit(f"✅ Shortcut '{name}' sent.")
-            logger.info(f"Shortcut '{name}' sent to current chat")
 
 
 # ============================================
@@ -279,10 +254,9 @@ def setup(ether, db, owner_id):
                 del SHORTCUT_DATA[name.lower()]
             
             await event.edit(f"🗑️ Shortcut '{name}' deleted.")
-            logger.info(f"Shortcut '{name}' deleted by owner")
         else:
             await event.edit(f"❌ Shortcut '{name}' not found.")
-            logger.info(f"Shortcut '{name}' not found for deletion")
+
     
 # ============================================
 # List Shortcuts Command
@@ -297,10 +271,6 @@ def setup(ether, db, owner_id):
         
         if not shortcuts:
             await event.reply("📭 No shortcuts saved yet.\n\nUse .shortcut <name> to save one.")
-            logger.info("No shortcuts found")
         else:
             shortcut_list = "\n".join(f"• <code>{s}</code>" for s in shortcuts)
             await event.reply(f"📋 <b>Your Shortcuts:</b>\n\n{shortcut_list}\n\n<i>Total: {len(shortcuts)}</i>", parse_mode="html")
-            logger.info(f"Listed {len(shortcuts)} shortcuts")
-    
-    logger.info("Shortcut plugin loaded")

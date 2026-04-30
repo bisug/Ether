@@ -159,7 +159,6 @@ async def inline_help(event):
                     )
                 
                 await event.answer([result], cache_time=0)
-                logger.info(f"Inline welcome answered for user {event.sender_id}")
             except Exception as e:
                 logger.error(f"Failed to create welcome inline result: {e}")
                 import traceback
@@ -171,7 +170,6 @@ async def inline_help(event):
 
     elif event.text.startswith("shortcut:"):
         shortcut_name = event.text.replace("shortcut:", "").lower()
-        logger.info(f"Shortcut inline query for '{shortcut_name}' from user {event.sender_id}")
         
         if shortcut_name in SHORTCUT_DATA:
             try:
@@ -180,7 +178,6 @@ async def inline_help(event):
                 
                 buttons = None
                 if shortcut.get("buttons"):
-                    logger.info(f"Reconstructing {len(shortcut['buttons'])} button rows for shortcut")
                     button_rows = []
                     for i, row in enumerate(shortcut["buttons"]):
                         row_buttons = []
@@ -206,7 +203,6 @@ async def inline_help(event):
                 text = shortcut.get("text", "")
                 image = shortcut.get("image")
                 
-                logger.info(f"Creating inline result for shortcut '{shortcut_name}' with text length: {len(text)}, image: {image}")
                 
                 if image:
                     result = builder.photo(
@@ -227,7 +223,6 @@ async def inline_help(event):
                     )
                 
                 await event.answer([result], cache_time=0)
-                logger.info(f"Inline shortcut '{shortcut_name}' answered for user {event.sender_id}")
             except Exception as e:
                 logger.error(f"Failed to create shortcut inline result: {e}")
                 import traceback
@@ -609,7 +604,6 @@ async def bot_cancel_handler(event):
     if Config.OWNER_ID in login_state:
         del login_state[Config.OWNER_ID]
         await event.reply("❌ Login cancelled.")
-        logger.info("Login cancelled by owner")
 
 
 # ============================================
@@ -672,7 +666,6 @@ async def bot_login_flow_handler(event):
             # Ensure client is connected
             if not userbot_client.is_connected():
                 await userbot_client.connect()
-                logger.info("Userbot client reconnected for OTP verification")
             
             await userbot_client.sign_in(
                 phone=state["phone"],

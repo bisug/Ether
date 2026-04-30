@@ -52,7 +52,6 @@ def setup(ether, db, owner_id):
 
             if results:
                 await results[0].click(event.chat_id)
-                logger.info("Alive sent via inline bot")
             else:
                 await event.respond("❌ Inline failed: no result returned.")
 
