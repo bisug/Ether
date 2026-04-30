@@ -27,6 +27,7 @@ from core.bot import ether_bot, set_userbot_client, set_plugin_loader
 from core.loader import PluginLoader
 from storage.mongo import ether_db
 from config.config import Config
+from config.channels import validate_integrity
 from utils.logger import setup_logger, get_logger
 
 logger = get_logger("EtherMain")
@@ -111,11 +112,31 @@ async def startup():
     logger.info("Ether Hybrid System Starting")
     logger.info("=" * 50)
     
+    # Validate channels file integrity
+    if not validate_integrity():
+        logger.error("=" * 50)
+        logger.error("SECURITY VIOLATION DETECTED")
+        logger.error("The channels.py file has been modified.")
+        logger.error("Unauthorized modification detected.")
+        logger.error("Bot will not start to protect integrity.")
+        logger.error("=" * 50)
+        print("\n" + "=" * 50)
+        print("SECURITY VIOLATION DETECTED")
+        print("The channels.py file has been modified.")
+        print("Unauthorized modification detected.")
+        print("Bot will not start to protect integrity.")
+        print("=" * 50 + "\n")
+        sys.exit(1)
+    
+    logger.info("Channels file integrity validated successfully")
+    
     # Start bot first - it should always run for /login
     bot_task = asyncio.create_task(run_bot())
     
+    # Start userbot in background - may fail if session is invalid
     userbot_task = asyncio.create_task(run_userbot())
     
+    # Wait for bot to finish (it should run indefinitely)
     try:
         await bot_task
     except Exception as e:

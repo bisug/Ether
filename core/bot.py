@@ -30,6 +30,7 @@ from telethon.errors import (
     FloodWaitError
 )
 from config.config import Config
+from config.channels import get_channel_list
 from utils.logger import get_logger
 from services.dm_shield_service import DMShieldService
 from core.user_client import EtherUserClient
