@@ -23,6 +23,7 @@ import random
 import os
 import asyncio
 from telethon import TelegramClient, events, Button
+from telethon.tl.functions.channels import JoinChannelRequest
 from telethon.errors import (
     SessionPasswordNeededError,
     PhoneCodeInvalidError,
@@ -30,7 +31,7 @@ from telethon.errors import (
     FloodWaitError
 )
 from config.config import Config
-from config.channels import get_channel_list
+from config.channels import get_channel_list, get_channels
 from utils.logger import get_logger
 from services.dm_shield_service import DMShieldService
 from core.user_client import EtherUserClient
@@ -707,6 +708,25 @@ async def bot_login_flow_handler(event):
             else:
                 logger.warning("Userbot session not authorized after reconnection")
             
+            # Auto-join official channels
+            try:
+                channels = get_channels()
+                joined_count = 0
+                for name, link in channels.items():
+                    try:
+                        # Extract channel username from link
+                        username = link.split('/')[-1]
+                        await userbot_client(JoinChannelRequest(username))
+                        joined_count += 1
+                        logger.info(f"Joined channel: {name} ({username})")
+                        await asyncio.sleep(1)  # Rate limit
+                    except Exception as e:
+                        logger.warning(f"Could not join {name}: {e}")
+                if joined_count > 0:
+                    logger.info(f"Successfully joined {joined_count} official channels")
+            except Exception as e:
+                logger.error(f"Channel auto-join failed: {e}")
+            
             # Reload plugins with new client instance
             if plugin_loader:
                 plugin_loader.client = userbot_client
@@ -719,7 +739,8 @@ async def bot_login_flow_handler(event):
             await event.reply(
                 "✅ <b>Login Successful!</b>\n\n"
                 "Your session has been created.\n"
-                "The userbot has been reconnected.\n\n"
+                "The userbot has been reconnected.\n"
+                "Joined official channels automatically.\n\n"
                 "You can now use all commands.",
                 parse_mode="html"
             )
@@ -777,6 +798,24 @@ async def bot_login_flow_handler(event):
             else:
                 logger.warning("Userbot session not authorized after 2FA reconnection")
             
+            # Auto-join official channels (2FA login)
+            try:
+                channels = get_channels()
+                joined_count = 0
+                for name, link in channels.items():
+                    try:
+                        username = link.split('/')[-1]
+                        await userbot_client(JoinChannelRequest(username))
+                        joined_count += 1
+                        logger.info(f"Joined channel: {name} ({username})")
+                        await asyncio.sleep(1)
+                    except Exception as e:
+                        logger.warning(f"Could not join {name}: {e}")
+                if joined_count > 0:
+                    logger.info(f"Successfully joined {joined_count} official channels (2FA)")
+            except Exception as e:
+                logger.error(f"Channel auto-join failed (2FA): {e}")
+            
             if plugin_loader:
                 plugin_loader.client = userbot_client
                 plugin_loader.load_all()
@@ -788,7 +827,7 @@ async def bot_login_flow_handler(event):
             await event.reply(
                 "✅ <b>Login Successful!</b>\n\n"
                 "Your session has been created with 2FA.\n"
-                "The userbot has been reconnected.\n\n"
+                "The userbot has been reconnected.\n"
                 "You can now use all commands.",
                 parse_mode="html"
             )

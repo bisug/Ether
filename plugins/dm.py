@@ -260,7 +260,10 @@ def setup(ether, db, owner_id):
     
     @ether.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
     async def dm_handler(event):
-        
+
+        if event.sender and event.sender.bot:
+            return
+            
         if event.sender_id == owner_id:
             return
         
