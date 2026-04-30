@@ -1,0 +1,896 @@
+# =============================================================================
+#  Ether Userbot System
+#
+#  Project Name:  Ether
+#  Author:        LearningBotsOfficial
+#
+#  Repository:    https://github.com/LearningBotsOfficial/Ether
+#
+#  Support:       https://t.me/Ether_Support
+#  Channel:       https://t.me/EtherUserbot
+#
+#  License:       Open Source (Keep Credits)
+#
+#  IMPORTANT:
+#    • If you copy, fork, or reuse this project or any part of it,
+#      you MUST retain original credits.
+#    • Proper attribution to Ether project is required.
+#
+#  Thank you for respecting open-source development.
+# =============================================================================
+
+import random
+import os
+import asyncio
+from telethon import TelegramClient, events, Button
+from telethon.errors import (
+    SessionPasswordNeededError,
+    PhoneCodeInvalidError,
+    PhoneCodeExpiredError,
+    FloodWaitError
+)
+from config.config import Config
+from utils.logger import get_logger
+from services.dm_shield_service import DMShieldService
+from core.user_client import EtherUserClient
+
+logger = get_logger("EtherBot")
+
+bot = TelegramClient('bot', Config.API_ID, Config.API_HASH)
+
+# Store login state temporarily
+login_state = {}
+userbot_client = None
+userbot_wrapper = None
+plugin_loader = None
+
+HELP_DATA = {
+    "text": "🔥 <b>Ether Userbot Help</b>",
+    "buttons": None
+}
+
+WELCOME_DATA = {
+    "text": None,
+    "image": None,
+    "buttons": None
+}
+
+SHORTCUT_DATA = {}
+
+
+main_buttons = [
+    [
+        Button.inline("🛡️ DM Protection", b"help_dm"),
+        Button.inline("📁 Shortcuts", b"help_shortcut")
+    ],
+    [
+        Button.inline("👥 TagAll", b"help_tagall"),
+        Button.inline("🎭 Fonts", b"help_fonts")
+    ],
+    [
+        Button.inline("🛡️ DM Shield", b"help_shield"),
+    ],
+    [
+        Button.inline("⚡ Ping System", b"help_ping"),
+        Button.inline("📊 System Info", b"help_system")
+    ]
+]
+
+
+HELP_DATA["buttons"] = main_buttons
+
+# ============================================
+
+@bot.on(events.InlineQuery)
+async def inline_help(event):
+    if event.text == "help":
+        builder = event.builder
+        
+        result = builder.article(
+            id="help_menu",
+            title="Ether Help Menu",
+            description="Click to see help with buttons",
+            text="🔥 <b>Ether Userbot Help</b>\n\nSelect a feature below:",
+            buttons=main_buttons,
+            parse_mode="html"
+        )
+        
+        await event.answer([result], cache_time=0)
+        logger.info(f"Inline help for user {event.sender_id}")
+
+# ============================================
+
+    elif event.text == "welcome":
+        logger.info(f"Welcome inline query from user {event.sender_id}")
+        if WELCOME_DATA["text"]:
+            try:
+                builder = event.builder
+                
+                buttons = None
+                if WELCOME_DATA["buttons"]:
+                    logger.info(f"Reconstructing {len(WELCOME_DATA['buttons'])} button rows")
+                    button_rows = []
+                    for i, row in enumerate(WELCOME_DATA["buttons"]):
+                        row_buttons = []
+                        logger.info(f"Processing row {i}: {type(row)} - {row}")
+                        for btn in row:
+                            logger.info(f"Processing button: {type(btn)} - {btn}")
+                            if isinstance(btn, dict):
+                                if btn.get("type") == "url":
+                                    row_buttons.append(Button.url(btn["text"], btn["url"]))
+                                    logger.info(f"Added URL button: {btn['text']}")
+                                elif btn.get("type") == "callback":
+                                    data = btn["data"]
+                                    if isinstance(data, str):
+                                        data = data.encode('utf-8')
+                                    elif not isinstance(data, bytes):
+                                        data = str(data).encode('utf-8')
+                                    row_buttons.append(Button.inline(btn["text"], data))
+                                    logger.info(f"Added inline button: {btn['text']}")
+                            else:
+                                logger.warning(f"Unexpected button type: {type(btn)}")
+                        if row_buttons:
+                            button_rows.append(row_buttons)
+                            logger.info(f"Added row with {len(row_buttons)} buttons")
+                    
+                    if button_rows:
+                        buttons = button_rows
+                        logger.info(f"Total button rows: {len(button_rows)}")
+                
+                logger.info(f"Creating inline result with text length: {len(WELCOME_DATA['text'])}, image: {WELCOME_DATA['image']}")
+                
+                if WELCOME_DATA["image"]:
+                    result = builder.photo(
+                        file=WELCOME_DATA["image"],
+                        id="welcome_msg",
+                        text=WELCOME_DATA["text"],
+                        buttons=buttons,
+                        parse_mode="html"
+                    )
+                else:
+                    result = builder.article(
+                        id="welcome_msg",
+                        title="Welcome Message",
+                        description="DM Protection Welcome",
+                        text=WELCOME_DATA["text"],
+                        buttons=buttons,
+                        parse_mode="html"
+                    )
+                
+                await event.answer([result], cache_time=0)
+                logger.info(f"Inline welcome answered for user {event.sender_id}")
+            except Exception as e:
+                logger.error(f"Failed to create welcome inline result: {e}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
+        else:
+            logger.warning(f"WELCOME_DATA is empty, cannot answer inline query")
+
+# ============================================
+
+    elif event.text.startswith("shortcut:"):
+        shortcut_name = event.text.replace("shortcut:", "").lower()
+        logger.info(f"Shortcut inline query for '{shortcut_name}' from user {event.sender_id}")
+        
+        if shortcut_name in SHORTCUT_DATA:
+            try:
+                builder = event.builder
+                shortcut = SHORTCUT_DATA[shortcut_name]
+                
+                buttons = None
+                if shortcut.get("buttons"):
+                    logger.info(f"Reconstructing {len(shortcut['buttons'])} button rows for shortcut")
+                    button_rows = []
+                    for i, row in enumerate(shortcut["buttons"]):
+                        row_buttons = []
+                        for btn in row:
+                            if isinstance(btn, dict):
+                                if btn.get("type") == "url":
+                                    row_buttons.append(Button.url(btn["text"], btn["url"]))
+                                    logger.info(f"Added URL button: {btn['text']}")
+                                elif btn.get("type") == "callback":
+                                    data = btn["data"]
+                                    if isinstance(data, str):
+                                        data = data.encode('utf-8')
+                                    elif not isinstance(data, bytes):
+                                        data = str(data).encode('utf-8')
+                                    row_buttons.append(Button.inline(btn["text"], data))
+                                    logger.info(f"Added inline button: {btn['text']}")
+                        if row_buttons:
+                            button_rows.append(row_buttons)
+                    
+                    if button_rows:
+                        buttons = button_rows
+                
+                text = shortcut.get("text", "")
+                image = shortcut.get("image")
+                
+                logger.info(f"Creating inline result for shortcut '{shortcut_name}' with text length: {len(text)}, image: {image}")
+                
+                if image:
+                    result = builder.photo(
+                        file=image,
+                        id=f"shortcut_{shortcut_name}",
+                        text=text,
+                        buttons=buttons,
+                        parse_mode="html"
+                    )
+                else:
+                    result = builder.article(
+                        id=f"shortcut_{shortcut_name}",
+                        title=f"Shortcut: {shortcut_name}",
+                        description="Saved shortcut content",
+                        text=text,
+                        buttons=buttons,
+                        parse_mode="html"
+                    )
+                
+                await event.answer([result], cache_time=0)
+                logger.info(f"Inline shortcut '{shortcut_name}' answered for user {event.sender_id}")
+            except Exception as e:
+                logger.error(f"Failed to create shortcut inline result: {e}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
+        else:
+            logger.warning(f"Shortcut '{shortcut_name}' not found in SHORTCUT_DATA")
+
+# ============================================
+
+    elif event.text.startswith("fonts:"):
+        try:
+            text = event.text.replace("fonts:", "", 1)
+
+            builder = event.builder
+
+            result_text = "🎭 <b>Font Styles</b>\n\n"
+
+            for key in FONT_MAPS:
+                styled = apply_font(text, key)
+                result_text += f"{key} → <code>{styled}</code>\n"
+
+            buttons = [
+                [
+                    Button.inline("✨ Style", f"font_style:{text}".encode()),
+                    Button.inline("🎲 Mix", f"font_mix:{text}".encode())
+                ]
+            ]
+
+            result = builder.article(
+                id="font_preview",
+                title="Font Styles",
+                description="Preview styled text",
+                text=result_text,
+                buttons=buttons,
+                parse_mode="html"
+            )
+
+            await event.answer([result], cache_time=0)
+
+        except Exception as e:
+            logger.error(f"Font inline error: {e}")
+
+# ============================================
+
+    elif event.text == "alive":
+        builder = event.builder
+    
+        result = builder.photo(
+            file=r"C:\Users\yashk\OneDrive\Desktop\Ether\assets\ether_logo.png",
+            text=(
+                "⚡ <b>Ether Userbot is Alive</b>\n\n"
+                "<blockquote>"
+                "🟢 Status: ONLINE\n"
+                "⚙️ System: RUNNING\n"
+                "🛡️ DM Shield: ACTIVE\n"
+                "📡 Telethon: CONNECTED\n"
+                "💾 Database: STABLE\n"
+                "</blockquote>\n\n"
+                "🚀 <i>All systems operational</i>"
+            ),
+            buttons=[
+                [
+                    Button.url("📂 Repository", "https://github.com/LearningBotsOfficial/Ether")
+                ]
+            ],
+            parse_mode="html"
+        )
+
+        await event.answer([result], cache_time=0)
+    
+    
+
+# ============================================
+# Callback Handlers
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_back"))
+async def cb_back(event):
+    await event.edit(
+        "🔥 <b>Ether Userbot Help</b>\n\nSelect a feature below:",
+        buttons=main_buttons,
+        parse_mode="html"
+    )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_dm"))
+async def cb_dm(event):
+    await event.edit(
+        "🛡️ <b>DM Protection System</b>\n\n"
+        "<b>Overview:</b>\n"
+        "When someone messages you:\n"
+        "1️⃣ First message → Welcome message sent\n"
+        "2️⃣ Follow-ups → Warning counter (max 3)\n"
+        "3️⃣ After max warnings → Auto block\n\n"
+        "Only users you <code>.allow</code> can message freely.\n\n"
+        "<b>Commands:</b>\n"
+        "<code>.setwelcome</code> - Set welcome message with buttons\n"
+        "<code>.clearwelcome</code> - Remove welcome message\n"
+        "<code>.allow</code> - Allow user (in their DM)\n"
+        "<code>.disallow</code> - Disallow user (in their DM)\n"
+        "<code>.setwarn &lt;number&gt;</code> - Set max warnings\n\n"
+        "<b>Warning System:</b>\n"
+        "Users who aren't allowed get:\n"
+        "• Welcome on 1st message\n"
+        "• Warning X/N on follow-ups\n"
+        "• <b>Auto-block</b> at max warnings\n\n"
+        "Use <code>.setwarn &lt;number&gt;</code> to change limit",
+        buttons=[[Button.inline("🔙 Back", b"help_back")]],
+        parse_mode="html"
+    )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_shortcut"))
+async def cb_shortcut(event):
+    await event.edit(
+        "📁 <b>Shortcuts System</b>\n\n"
+        "<b>Overview:</b>\n"
+        "Save messages, images, and buttons with custom names for quick access.\n"
+        "• <b>Text:</b> Save formatted text with bold, italic, code\n"
+        "• <b>Images:</b> Save photos with captions\n"
+        "• <b>Buttons:</b> Save inline buttons (URL & callback)\n\n"
+        "Perfect for welcome messages, announcements, or frequently sent content.\n\n"
+        "<b>Commands:</b>\n"
+        "<code>.shortcut &lt;name&gt;</code> - Save content (reply to message)\n"
+        "<code>.get &lt;name&gt;</code> - Retrieve and send shortcut\n"
+        "<code>.delshortcut &lt;name&gt;</code> - Delete a shortcut\n"
+        "<code>.shortcuts</code> - List all saved shortcuts\n\n"
+        "<b>Tips:</b>\n"
+        "• Reply to a message with <code>.shortcut mychannel</code> to save\n"
+        "• Use <code>.get mychannel</code> to send it anywhere\n"
+        "• Reply to a message with <code>.get mychannel</code> to send to that chat\n"
+        "• Names are case-insensitive (MyChannel = mychannel)\n"
+        "• Button format: <code>[Button.url('Text', 'URL')]</code>\n"
+        "• Button format: <code>[Button.inline('Text', 'data')]</code>",
+        buttons=[[Button.inline("🔙 Back", b"help_back")]],
+        parse_mode="html"
+    )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_tagall"))
+async def cb_tagall(event):
+    await event.edit(
+        "👥 <b>TagAll </b>\n\n"
+        "Mention group members in small batches with delay to avoid spam and limits.\n\n"
+        
+        "<b>Command:</b>\n"
+        "<code>.tagall</code>\n\n"
+        
+        "<b>Example:</b>\n"
+        "<code>.tagall Hello everyone!</code>\n\n"
+        
+        "<b>Tips:</b>\n"
+        "• Works only in groups\n"
+        "• Skips bots & deleted users\n"
+        "• Uses safe limits to protect your account",
+        
+        buttons=[[Button.inline("🔙 Back", b"help_back")]],
+        parse_mode="html"
+    )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_ping"))
+async def cb_ping(event):
+    await event.edit(
+        "⚡ <b>Ping System</b>\n\n"
+        "<b>Overview:</b>\n"
+        "The ping command measures how quickly the userbot responds.\n"
+        "Lower = better.\n\n"
+        "<b>Commands:</b>\n"
+        "<code>.ping</code> - Check response time\n\n"
+        "Returns time in milliseconds.",
+        buttons=[[Button.inline("🔙 Back", b"help_back")]],
+        parse_mode="html"
+    )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_system"))
+async def cb_system(event):
+    await event.edit(
+        "📊 <b>System Information</b>\n\n"
+        "Ether Userbot v2.0\n"
+        "• Telethon\n"
+        "• MongoDB\n"
+        "• Plugins",
+        buttons=[[Button.inline("🔙 Back", b"help_back")]],
+        parse_mode="html"
+    )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_fonts"))
+async def cb_fonts(event):
+    await event.edit(
+        "🎭 <b>Fonts & Styles System</b>\n\n"
+        "<b>Overview:</b>\n"
+        "Convert normal text into stylish fonts and modern effects.\n"
+        "Includes aesthetic, glitch, hacker, and decorative styles.\n\n"
+        
+        "<b>Command:</b>\n"
+        "<code>.fonts &lt;text&gt;</code>\n\n"
+        
+        "<b>Example:</b>\n"
+        "<code>.fonts hello world</code>\n\n"
+        
+        "<b>Features:</b>\n"
+        "• 10+ Unicode font styles\n"
+        "• Aesthetic & vaporwave text\n"
+        "• Glitch & hacker effects\n"
+        "• Mix styles randomly\n"
+        "• Interactive buttons (Style / Mix / Cool)\n\n"
+        
+        "<b>Tips:</b>\n"
+        "• Works in any chat\n"
+        "• Use for bios, captions, branding\n"
+        "• Combine with shortcuts for fast reuse",
+        
+        buttons=[[Button.inline("🔙 Back", b"help_back")]],
+        parse_mode="html"
+    )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(pattern=b"font_.*"))
+async def font_callbacks(event):
+
+    data = event.data.decode()
+
+    if data.startswith("font_style:"):
+        text = data.split(":", 1)[1]
+
+        result = (
+            f"✨ <code>{text}</code>\n"
+            f"🔥 <code>{apply_font(text,'2')}</code>\n"
+            f"❤️ <code>{apply_font(text,'3')}</code>"
+        )
+
+        await event.edit(result, parse_mode="html")
+
+    elif data.startswith("font_mix:"):
+        text = data.split(":", 1)[1]
+
+        mixed = ""
+        for char in text:
+            if char.isalpha():
+                font = random.choice(list(FONT_MAPS.keys()))
+                mixed += char.lower().translate(FONT_MAPS[font])
+            else:
+                mixed += char
+
+        await event.edit(
+            f"🎲 <b>Mixed Style</b>\n\n<code>{mixed}</code>",
+            parse_mode="html"
+        )
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_shield"))
+async def cb_shield(event):
+
+    await event.edit(
+        "🛡️ <b>DM Shield System</b>\n\n"
+        
+        "<b>Overview:</b>\n"
+        "Automatically protects your DM from unwanted messages.\n\n"
+        
+        "<b>What it blocks:</b>\n"
+        "🔗 Links (t.me, https, tg://)\n"
+        "👤 Usernames (@spam tags)\n\n"
+        
+        "<b>Commands:</b>\n"
+        "<code>.shield</code> - Open control panel\n"
+        "<code>.shield on</code> - Enable system\n"
+        "<code>.shield off</code> - Disable system\n"
+        "<code>.shield link</code> - link filter\n"
+        "<code>.shield user</code> - username filter\n"
+        "<code>.shield allow</code> - Reply to whitelist user\n"
+        "<code>.shield disallow</code> - Reply to remove whitelist\n"
+        "<code>.shield status</code> - Show system status\n\n"
+        
+        "<b>Tip:</b>\n"
+        "Use allow system to whitelist trusted users.",
+        
+        buttons=[[Button.inline("🔙 Back", b"help_back")]],
+        parse_mode="html"
+    )
+
+# ============================================
+# Bot Welcome
+# ============================================
+
+BOT_WELCOME_TEXT = (
+    "⚡ <b>Welcome to Ether Userbot</b>\n\n"
+    "A fast, modern Telegram userbot built for automation and control.\n\n"
+    "🔒 <b>Security:</b> 99% safe — no need to generate session strings from unknown sources.\n"
+    "For full transparency, check the source code below.\n\n"
+    "🚀 Manage Telegram like a pro.\n"
+)
+
+BOT_WELCOME_IMAGE = r"C:\Users\yashk\OneDrive\Desktop\Ether\assets\ether_logo.png"
+
+bot_dm_buttons = [
+    [
+        Button.url("📢 Updates", "https://t.me/EtherUserbot"),
+        Button.url("💬 Support Group", "https://t.me/EtherSupport")
+    ],
+    [Button.url("📂 Source Code", "https://github.com/LearningBotsOfficial/Ether")],
+]
+
+# ============================================
+# Bot Start Handler
+# ============================================
+
+@bot.on(events.NewMessage(pattern=r"^/start$", incoming=True, func=lambda e: e.is_private))
+async def bot_start_handler(event):
+    try:
+        await event.respond(
+            file=BOT_WELCOME_IMAGE,
+            message=BOT_WELCOME_TEXT,
+            buttons=bot_dm_buttons,
+            parse_mode="html"
+        )
+        logger.info(f"Bot /start reply sent to user {event.sender_id}")
+    except Exception as e:
+        logger.error(f"Bot /start reply failed: {e}")
+        try:
+            await event.respond(
+                BOT_WELCOME_TEXT,
+                buttons=bot_dm_buttons,
+                parse_mode="html"
+            )
+        except Exception as e2:
+            logger.error(f"Bot /start fallback failed: {e2}")
+
+
+# ============================================
+# Bot Login Handler
+# ============================================
+
+@bot.on(events.NewMessage(pattern=r"^/login$", incoming=True, func=lambda e: e.is_private))
+async def bot_login_handler(event):
+    if event.sender_id != Config.OWNER_ID:
+        await event.reply("❌ This command is only for the admin.")
+        return
+    
+    if userbot_client is None:
+        await event.reply("❌ Userbot client not initialized. Please restart the bot.")
+        return
+    
+    login_state[Config.OWNER_ID] = {"step": "phone"}
+    
+    await event.reply(
+        "🔐 <b>Ether Login System</b>\n\n"
+        "Please enter your phone number with country code.\n\n"
+        "<i>Example: +9198*****</i>\n\n"
+        "Send /cancel to abort.",
+        parse_mode="html"
+    )
+    logger.info(f"Login initiated by owner {Config.OWNER_ID}")
+
+
+# ============================================
+# Bot Cancel Handler
+# ============================================
+
+@bot.on(events.NewMessage(pattern=r"^/cancel$", incoming=True, func=lambda e: e.is_private))
+async def bot_cancel_handler(event):
+    if event.sender_id != Config.OWNER_ID:
+        return
+    
+    if Config.OWNER_ID in login_state:
+        del login_state[Config.OWNER_ID]
+        await event.reply("❌ Login cancelled.")
+        logger.info("Login cancelled by owner")
+
+
+# ============================================
+# Bot Login Flow Handler
+# ============================================
+
+@bot.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
+async def bot_login_flow_handler(event):
+    global userbot_client, userbot_wrapper
+    
+    if event.sender_id != Config.OWNER_ID:
+        return
+    
+    if Config.OWNER_ID not in login_state:
+        return
+    
+    if userbot_client is None:
+        await event.reply("❌ Userbot client not initialized.")
+        return
+    
+    state = login_state[Config.OWNER_ID]
+    text = event.text.strip()
+    
+    if text.startswith("/"):
+        return
+    
+    if state["step"] == "phone":
+        phone = text
+        
+        try:
+            # Ensure client is connected
+            if not userbot_client.is_connected():
+                await userbot_client.connect()
+                logger.info("Userbot client connected for login")
+            
+            result = await userbot_client.send_code_request(phone)
+            state["step"] = "otp"
+            state["phone"] = phone
+            state["phone_code_hash"] = result.phone_code_hash
+            
+            await event.reply(
+                f"📩 Send OTP with spaces (e.g. 1 2 3 4 5)\n\n"
+                "Send /cancel to abort.",
+                parse_mode="html"
+            )
+            logger.info(f"OTP sent to {phone}")
+        except FloodWaitError as e:
+            del login_state[Config.OWNER_ID]
+            await event.reply(f"⏳ <b>Flood Wait</b>\n\nPlease wait {e.seconds} seconds before trying again.", parse_mode="html")
+            logger.warning(f"Flood wait: {e.seconds}s")
+        except Exception as e:
+            del login_state[Config.OWNER_ID]
+            await event.reply(f"❌ <b>Error</b>\n\nFailed to send OTP: {str(e)}", parse_mode="html")
+            logger.error(f"OTP send error: {e}")
+    
+    elif state["step"] == "otp":
+        code = text
+        
+        try:
+            # Ensure client is connected
+            if not userbot_client.is_connected():
+                await userbot_client.connect()
+                logger.info("Userbot client reconnected for OTP verification")
+            
+            await userbot_client.sign_in(
+                phone=state["phone"],
+                code=code,
+                phone_code_hash=state["phone_code_hash"]
+            )
+            
+            del login_state[Config.OWNER_ID]
+            
+            await asyncio.sleep(1)
+            await userbot_client.disconnect()
+            
+            if userbot_wrapper:
+                userbot_wrapper._client = None
+                userbot_client = userbot_wrapper.get_client()
+                await userbot_client.connect()
+                logger.info("Userbot client recreated and reconnected after login")
+            else:
+                await userbot_client.connect()
+                logger.info("Userbot client reconnected after login (no wrapper)")
+            
+            # Verify authorization
+            is_authorized = await userbot_client.is_user_authorized()
+            if is_authorized:
+                logger.info("Userbot session verified as authorized")
+            else:
+                logger.warning("Userbot session not authorized after reconnection")
+            
+            # Reload plugins with new client instance
+            if plugin_loader:
+                plugin_loader.client = userbot_client
+                plugin_loader.load_all()
+                stats = plugin_loader.get_stats()
+                logger.info(f"Reloaded {stats['total']} plugins after login: {stats['plugins']}")
+            else:
+                logger.warning("Plugin loader not available - commands may not work")
+            
+            await event.reply(
+                "✅ <b>Login Successful!</b>\n\n"
+                "Your session has been created.\n"
+                "The userbot has been reconnected.\n\n"
+                "You can now use all commands.",
+                parse_mode="html"
+            )
+            logger.info("Login successful")
+        except SessionPasswordNeededError:
+            state["step"] = "2fa"
+            await event.reply(
+                "🔐 <b>2FA Required</b>\n\n"
+                "Please enter your two-factor authentication password.\n\n"
+                "Send /cancel to abort.",
+                parse_mode="html"
+            )
+            logger.info("2FA required")
+        except PhoneCodeInvalidError:
+            del login_state[Config.OWNER_ID]
+            await event.reply("❌ <b>Invalid Code</b>\n\nThe OTP you entered is incorrect. Please try /login again.", parse_mode="html")
+            logger.warning("Invalid OTP entered")
+        except PhoneCodeExpiredError:
+            del login_state[Config.OWNER_ID]
+            await event.reply("❌ <b>Code Expired</b>\n\nThe OTP has expired. Please try /login again.", parse_mode="html")
+            logger.warning("OTP expired")
+        except Exception as e:
+            del login_state[Config.OWNER_ID]
+            await event.reply(f"❌ <b>Error</b>\n\nFailed to verify OTP: {str(e)}", parse_mode="html")
+            logger.error(f"OTP verify error: {e}")
+    
+    elif state["step"] == "2fa":
+        password = text
+        
+        try:
+            # Ensure client is connected
+            if not userbot_client.is_connected():
+                await userbot_client.connect()
+                logger.info("Userbot client reconnected for 2FA verification")
+            
+            await userbot_client.sign_in(password=password)
+            
+            del login_state[Config.OWNER_ID]
+            
+            await asyncio.sleep(1)
+            await userbot_client.disconnect()
+            
+            if userbot_wrapper:
+                userbot_wrapper._client = None
+                userbot_client = userbot_wrapper.get_client()
+                await userbot_client.connect()
+                logger.info("Userbot client recreated and reconnected after 2FA login")
+            else:
+                await userbot_client.connect()
+                logger.info("Userbot client reconnected after 2FA login (no wrapper)")
+            
+            is_authorized = await userbot_client.is_user_authorized()
+            if is_authorized:
+                logger.info("Userbot session verified as authorized (2FA)")
+            else:
+                logger.warning("Userbot session not authorized after 2FA reconnection")
+            
+            if plugin_loader:
+                plugin_loader.client = userbot_client
+                plugin_loader.load_all()
+                stats = plugin_loader.get_stats()
+                logger.info(f"Reloaded {stats['total']} plugins after 2FA login: {stats['plugins']}")
+            else:
+                logger.warning("Plugin loader not available - commands may not work")
+            
+            await event.reply(
+                "✅ <b>Login Successful!</b>\n\n"
+                "Your session has been created with 2FA.\n"
+                "The userbot has been reconnected.\n\n"
+                "You can now use all commands.",
+                parse_mode="html"
+            )
+            logger.info("2FA login successful")
+        except Exception as e:
+            del login_state[Config.OWNER_ID]
+            await event.reply(f"❌ <b>Error</b>\n\nFailed to verify 2FA: {str(e)}", parse_mode="html")
+            logger.error(f"2FA verify error: {e}")
+
+# ============================================
+# Remove Command
+# ============================================
+
+@bot.on(events.NewMessage(pattern=r"^/remove$", incoming=True, func=lambda e: e.is_private))
+async def bot_remove_handler(event):
+    if event.sender_id != Config.OWNER_ID:
+        await event.reply("❌ This command is only for the admin.")
+        return
+    
+    session_file = f"{Config.SESSION_NAME}.session"
+    session_journal = f"{Config.SESSION_NAME}.session-journal"
+    
+    deleted = False
+    
+    if os.path.exists(session_file):
+        try:
+            os.remove(session_file)
+            deleted = True
+            logger.info(f"Session file removed: {session_file}")
+        except Exception as e:
+            logger.error(f"Failed to remove session file: {e}")
+    
+    if os.path.exists(session_journal):
+        try:
+            os.remove(session_journal)
+            logger.info(f"Session journal removed: {session_journal}")
+        except Exception as e:
+            logger.error(f"Failed to remove session journal: {e}")
+    
+    if deleted:
+        await event.reply(
+            "🗑️ <b>Session Removed</b>\n\n"
+            "Your session has been deleted.\n"
+            "Use /login to create a new session.",
+            parse_mode="html"
+        )
+    else:
+        await event.reply(
+            "ℹ️ <b>No Session Found</b>\n\n"
+            "No session file exists to remove.",
+            parse_mode="html"
+        )
+
+
+def set_userbot_client(client, wrapper=None):
+    global userbot_client, userbot_wrapper
+    userbot_client = client
+    userbot_wrapper = wrapper
+    logger.info("Userbot client reference set for login")
+
+
+def set_plugin_loader(loader):
+    global plugin_loader
+    plugin_loader = loader
+    logger.info("Plugin loader reference set for login")
+
+
+# ============================================
+# Font Utilities
+# ============================================
+
+FONT_MAPS = {
+    "1": str.maketrans("abcdefghijklmnopqrstuvwxyz", "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ"),
+    "2": str.maketrans("abcdefghijklmnopqrstuvwxyz", "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃"),
+    "3": str.maketrans("abcdefghijklmnopqrstuvwxyz", "𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫"),
+    "4": str.maketrans("abcdefghijklmnopqrstuvwxyz", "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇"),
+    "5": str.maketrans("abcdefghijklmnopqrstuvwxyz", "𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣"),
+    "6": str.maketrans("abcdefghijklmnopqrstuvwxyz", "ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ"),
+    "7": str.maketrans("abcdefghijklmnopqrstuvwxyz", "🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉"),
+    "8": str.maketrans("abcdefghijklmnopqrstuvwxyz", "αв¢∂єƒgнιנкℓмησρզяѕтυνωχуz"),
+    "9": str.maketrans("abcdefghijklmnopqrstuvwxyz", "ᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏˡᵐⁿᵒᵖᵠʳˢᵗᵘᵛʷˣʸᶻ"),
+    "10": str.maketrans("abcdefghijklmnopqrstuvwxyz", "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"),
+}
+
+def apply_font(text, font_key):
+    return text.lower().translate(FONT_MAPS[font_key])
+
+
+# ============================================
+# Bot Class
+# ============================================
+
+class EtherBot:
+    
+    def __init__(self):
+        self.token = Config.BOT_TOKEN
+        self._running = False
+    
+    async def start(self) -> None:
+        if not Config.BOT_TOKEN:
+            logger.warning("No BOT_TOKEN - bot features disabled")
+            return
+        
+        try:
+            await bot.start(bot_token=self.token)
+            logger.info("Bot started")
+            await bot.run_until_disconnected()
+        except Exception as e:
+            logger.error(f"Bot error: {e}")
+    
+    async def stop(self) -> None:
+        await bot.disconnect()
+        logger.info("Bot stopped")
+
+
+ether_bot = EtherBot()
