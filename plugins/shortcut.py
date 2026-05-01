@@ -25,7 +25,7 @@ import re
 from services.shortcut_service import ShortcutService
 from utils.parser import parse_links
 from utils.logger import get_logger
-from core.bot import bot, SHORTCUT_DATA
+from core.buttons import bot, SHORTCUT_DATA
 
 logger = get_logger("EtherShortcut")
 

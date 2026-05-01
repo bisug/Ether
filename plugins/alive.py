@@ -28,9 +28,10 @@ logger = get_logger("EtherAlive")
 
 def setup(ether, db, owner_id):
 
+    from core.buttons import ether_bot
     bot_username = Config.BOT_USERNAME or ""
 
-    ALIVE_IMAGE = "assets/ether_logo.png"
+    ALIVE_IMAGE = Config.START_IMG_URL
 
     @ether.on(events.NewMessage(pattern=r"^\.alive$", outgoing=True))
     async def alive_handler(event):
@@ -38,15 +39,20 @@ def setup(ether, db, owner_id):
         if event.sender_id != owner_id:
             return
 
-        if not bot_username:
-            await event.reply("BOT_USERNAME not set.")
+        # Use dynamically fetched username if available
+        target_username = bot_username
+        if ether_bot.me and ether_bot.me.username:
+            target_username = ether_bot.me.username
+
+        if not target_username:
+            await event.reply("BOT_USERNAME not set and bot not initialized.")
             return
 
         try:
             await event.delete()
 
             results = await ether.inline_query(
-                bot_username,
+                target_username,
                 "alive"
             )
 

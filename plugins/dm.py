@@ -27,7 +27,7 @@ from services.dm_service import DMService
 from utils.parser import parse_links
 from utils.logger import get_logger
 from config.config import Config
-from core.bot import bot, WELCOME_DATA
+from core.buttons import bot, WELCOME_DATA
 
 logger = get_logger("EtherDM")
 
@@ -35,17 +35,20 @@ logger = get_logger("EtherDM")
 # Default Welcome Text
 # ============================================
 
-DEFAULT_WELCOME_TEXT = (
-    "<b>Ether Userbot</b>\n\n"
-    "Welcome!\n\n"
-    "<blockquote>"
-    "This user is currently protected by DM Shield system.\n"
-    "Direct messaging is monitored and controlled.\n\n"
-    "No custom welcome message has been set yet.\n\n"
-    "This is an automated response from Ether Userbot."
-    "</blockquote>\n\n"
-    "Please wait for a reply or try again later."
-)
+def get_default_welcome_text():
+    from core.buttons import get_bot_name
+    bot_name = get_bot_name()
+    return (
+        f"<b>{bot_name}</b>\n\n"
+        "Welcome!\n\n"
+        "<blockquote>"
+        "This user is currently protected by DM Shield system.\n"
+        "Direct messaging is monitored and controlled.\n\n"
+        "No custom welcome message has been set yet.\n\n"
+        f"This is an automated response from {bot_name}."
+        "</blockquote>\n\n"
+        "Please wait for a reply or try again later."
+    )
 
 
 def setup(ether, db, owner_id):
@@ -257,7 +260,7 @@ def setup(ether, db, owner_id):
         user = await dm_service.get_user(user_id)
         welcome_config = await dm_service.get_welcome(owner_id)
         
-        welcome_text = welcome_config.get("text") or DEFAULT_WELCOME_TEXT
+        welcome_text = welcome_config.get("text") or get_default_welcome_text()
         welcome_image = welcome_config.get("image")
         
         async def send_welcome(text: str) -> None:

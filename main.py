@@ -23,7 +23,7 @@ import asyncio
 import sys
 
 from core.user_client import EtherUserClient
-from core.bot import ether_bot, set_userbot_client, set_plugin_loader
+from core.buttons import ether_bot, set_userbot_client, set_plugin_loader
 from core.loader import PluginLoader
 from storage.mongo import ether_db
 from config.config import Config
