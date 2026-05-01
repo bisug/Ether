@@ -1,47 +1,33 @@
 # Stage 1: Builder
 FROM python:3.12-slim AS builder
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Install build dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Upgrade pip and install dependencies
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --user -r requirements.txt
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir --user -r requirements.txt
 
 # Stage 2: Runner
 FROM python:3.12-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PATH="/root/.local/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/home/appuser/.local/bin:$PATH"
 
-# Install runtime dependencies and upgrade system packages
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN addgroup --system appgroup && adduser --system --no-create-home --ingroup appgroup appuser
 
-# Set work directory
 WORKDIR /app
 
-# Copy installed python packages from builder
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
+COPY --chown=appuser:appgroup . .
 
-# Copy application code
-COPY . .
+RUN mkdir sessions logs && chown appuser:appgroup sessions logs
 
-# Ensure session and logs directories exist
-RUN mkdir -p sessions logs
+USER appuser
 
-# Run the application
 CMD ["python", "main.py"]
