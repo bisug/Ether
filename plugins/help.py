@@ -22,7 +22,7 @@
 from telethon import events
 from config.config import Config
 from utils.logger import get_logger
-from core.bot import bot
+from core.buttons import bot
 
 logger = get_logger("EtherHelp")
 
@@ -43,9 +43,13 @@ def setup(ether, db, owner_id):
         if user != Config.OWNER_ID:
             return
         
+        from core.buttons import get_bot_name, get_userbot_name
+        bot_name = get_bot_name()
+        userbot_name = get_userbot_name()
+
         if not bot_username:
             await event.reply(
-                "<b>Ether Help</b>\n\n"
+                f"<b>{userbot_name} Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
                 "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"
@@ -67,7 +71,7 @@ def setup(ether, db, owner_id):
                 await results[0].click(event.chat_id)
             else:
                 await event.respond(
-                    "<b>Ether Help</b>\n\n"
+                    f"<b>{userbot_name} Help</b>\n\n"
                     "<code>.commands</code> - List all commands\n"
                     "<code>.ping</code> - Check latency\n"
                     "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"
@@ -80,7 +84,7 @@ def setup(ether, db, owner_id):
         except Exception as e:
             logger.error(f"Inline help failed: {e}")
             await event.respond(
-                "<b>Ether Help</b>\n\n"
+                f"<b>{userbot_name} Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
                 "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"

@@ -84,16 +84,39 @@ HELP_DATA["buttons"] = main_buttons
 
 # ============================================
 
+def get_bot_name():
+    return ether_bot.me.first_name if ether_bot and ether_bot.me else "Ether Userbot"
+
+def get_userbot_name():
+    return userbot_wrapper.me.first_name if userbot_wrapper and userbot_wrapper.me else "Ether User"
+
+def update_dynamic_texts():
+    global BOT_WELCOME_TEXT, HELP_DATA
+
+    bot_name = get_bot_name()
+    userbot_name = get_userbot_name()
+
+    HELP_DATA["text"] = f"<b>{bot_name} Help Guide</b>"
+
+    BOT_WELCOME_TEXT = (
+        f"<b>Welcome to {bot_name} System</b>\n\n"
+        f"{bot_name} is a high-performance, modular Telegram userbot architecture built with Telethon and MongoDB. Designed for developers who prioritize security, speed, and clean code.\n\n"
+        "<b>Security:</b> 99% safe - no need to generate session strings from unknown sources.\n"
+        "For full transparency, check the source code below.\n\n"
+        "Manage your Telegram account like a pro with automation and control."
+    )
+
 @bot.on(events.InlineQuery)
 async def inline_help(event):
     if event.text == "help":
         builder = event.builder
         
+        bot_name = get_bot_name()
         result = builder.article(
             id="help_menu",
-            title="Ether Help Menu",
+            title=f"{bot_name} Help Menu",
             description="Click to see help with buttons",
-            text="<b>Ether Userbot Help Guide</b>\n\nWelcome to the help center. Select a category below to view available commands and their usage guides:",
+            text=f"<b>{bot_name} Help Guide</b>\n\nWelcome to the help center. Select a category below to view available commands and their usage guides:",
             buttons=main_buttons,
             parse_mode="html"
         )
@@ -270,11 +293,14 @@ async def inline_help(event):
 
     elif event.text == "alive":
         builder = event.builder
+
+        bot_name = get_bot_name()
+        userbot_name = get_userbot_name()
     
         result = builder.photo(
-            file="assets/ether_logo.png",
+            file=Config.START_IMG_URL,
             text=(
-                "<b>Ether Userbot is Alive</b>\n\n"
+                f"<b>{userbot_name} is Alive</b>\n\n"
                 "<blockquote>"
                 "Status: ONLINE\n"
                 "System: RUNNING\n"
@@ -302,8 +328,9 @@ async def inline_help(event):
 
 @bot.on(events.CallbackQuery(data=b"help_back"))
 async def cb_back(event):
+    bot_name = get_bot_name()
     await event.edit(
-        "<b>Ether Userbot Help Guide</b>\n\nWelcome to the help center. Select a category below to view available commands and their usage guides:",
+        f"<b>{bot_name} Help Guide</b>\n\nWelcome to the help center. Select a category below to view available commands and their usage guides:",
         buttons=main_buttons,
         parse_mode="html"
     )
@@ -407,9 +434,11 @@ async def cb_ping(event):
 
 @bot.on(events.CallbackQuery(data=b"help_system"))
 async def cb_system(event):
+    bot_name = get_bot_name()
+    userbot_name = get_userbot_name()
     await event.edit(
-        "<b>System Information</b>\n\n"
-        "Ether Userbot v2.0\n"
+        f"<b>System Information</b>\n\n"
+        f"{userbot_name} ({bot_name}) v2.0\n"
         "- Telethon\n"
         "- MongoDB\n"
         "- Plugins\n\n"
@@ -548,7 +577,7 @@ BOT_WELCOME_TEXT = (
     "Manage your Telegram account like a pro with automation and control."
 )
 
-BOT_WELCOME_IMAGE = "assets/ether_logo.png"
+BOT_WELCOME_IMAGE = Config.START_IMG_URL
 
 bot_dm_buttons = [
     [
@@ -567,10 +596,11 @@ bot_dm_buttons = [
 
 @bot.on(events.NewMessage(pattern=r"^/help$", incoming=True, func=lambda e: e.is_private))
 async def bot_help_handler(event):
+    bot_name = get_bot_name()
     try:
         await bot.send_message(
             event.chat_id,
-            "<b>Ether Userbot Help Guide</b>\n\nWelcome to the help center. Select a category below to view available commands and their usage guides:",
+            f"<b>{bot_name} Help Guide</b>\n\nWelcome to the help center. Select a category below to view available commands and their usage guides:",
             buttons=main_buttons,
             parse_mode="html"
         )
@@ -620,8 +650,9 @@ async def bot_login_handler(event):
     
     login_state[Config.OWNER_ID] = {"step": "phone"}
     
+    bot_name = get_bot_name()
     await event.reply(
-        "<b>Ether Login System</b>\n\n"
+        f"<b>{bot_name} Login System</b>\n\n"
         "Please enter your phone number with country code.\n\n"
         "<i>Example: +9198*****</i>\n\n"
         "Send /cancel to abort.",
@@ -981,7 +1012,16 @@ class EtherBot:
     def __init__(self):
         self.token = Config.BOT_TOKEN
         self._running = False
+        self.me = None
     
+    async def fetch_me(self):
+        try:
+            self.me = await bot.get_me()
+            logger.info(f"Bot details fetched: {self.me.first_name} (@{self.me.username})")
+            update_dynamic_texts()
+        except Exception as e:
+            logger.error(f"Failed to fetch bot details: {e}")
+
     async def start(self) -> None:
         if not Config.BOT_TOKEN:
             logger.warning("No BOT_TOKEN - bot features disabled")
@@ -994,7 +1034,10 @@ class EtherBot:
             # Add timeout to connection
             await asyncio.wait_for(bot.start(bot_token=self.token), timeout=30)
             
-            logger.info("Bot connected successfully - waiting for messages...")
+            logger.info("Bot connected successfully - fetching details...")
+            await self.fetch_me()
+
+            logger.info("Bot ready - waiting for messages...")
             await bot.run_until_disconnected()
         except asyncio.TimeoutError:
             logger.error("Bot connection timed out after 30 seconds")

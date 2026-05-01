@@ -30,6 +30,7 @@ class EtherUserClient:
     
     _instance = None
     _client = None
+    me = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -59,6 +60,13 @@ class EtherUserClient:
             logger.error(f"Connection failed: {e}")
             return False
 
+    async def fetch_me(self):
+        try:
+            self.me = await self.client.get_me()
+            logger.info(f"Userbot details fetched: {self.me.first_name} (@{self.me.username})")
+        except Exception as e:
+            logger.error(f"Failed to fetch userbot details: {e}")
+
     async def disconnect(self) -> None:
         try:
             if self._client and self._client.is_connected():
@@ -69,7 +77,10 @@ class EtherUserClient:
 
     async def is_authorized(self) -> bool:
         try:
-            return await self.client.is_user_authorized()
+            authorized = await self.client.is_user_authorized()
+            if authorized and not self.me:
+                await self.fetch_me()
+            return authorized
         except Exception as e:
             logger.error(f"Auth check failed: {e}")
             return False

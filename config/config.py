@@ -45,6 +45,8 @@ class Config:
     # Dm Protection Settings
     DM_MAX_WARNS: int = int(os.getenv("DM_MAX_WARNS", "3"))
     
+    START_IMG_URL: str = os.getenv("START_IMG_URL", "assets/ether_logo.png")
+
     @classmethod
     def validate(cls) -> None:
         missing = []
