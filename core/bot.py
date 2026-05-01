@@ -636,9 +636,13 @@ async def bot_login_flow_handler(event):
         try:
             # Ensure client is connected
             if not userbot_client.is_connected():
+                logger.info("Userbot client not connected, attempting to connect...")
                 await userbot_client.connect()
-                logger.info("Userbot client connected for login")
             
+            if not userbot_client.is_connected():
+                await event.reply("❌ <b>Connection Error</b>\n\nFailed to connect to Telegram servers. Please check your internet connection or API credentials.", parse_mode="html")
+                return
+
             result = await userbot_client.send_code_request(phone)
             state["step"] = "otp"
             state["phone"] = phone
@@ -665,8 +669,13 @@ async def bot_login_flow_handler(event):
         try:
             # Ensure client is connected
             if not userbot_client.is_connected():
+                logger.info("Userbot client not connected during OTP step, attempting to connect...")
                 await userbot_client.connect()
             
+            if not userbot_client.is_connected():
+                await event.reply("❌ <b>Connection Error</b>\n\nConnection lost. Please try /login again.", parse_mode="html")
+                return
+
             await userbot_client.sign_in(
                 phone=state["phone"],
                 code=code,
@@ -759,9 +768,13 @@ async def bot_login_flow_handler(event):
         try:
             # Ensure client is connected
             if not userbot_client.is_connected():
+                logger.info("Userbot client not connected during 2FA step, attempting to connect...")
                 await userbot_client.connect()
-                logger.info("Userbot client reconnected for 2FA verification")
             
+            if not userbot_client.is_connected():
+                await event.reply("❌ <b>Connection Error</b>\n\nConnection lost. Please try /login again.", parse_mode="html")
+                return
+
             await userbot_client.sign_in(password=password)
             
             del login_state[Config.OWNER_ID]
@@ -833,26 +846,45 @@ async def bot_remove_handler(event):
         await event.reply("❌ This command is only for the admin.")
         return
     
+    global userbot_client
+    
+    # Disconnect client first to release file locks
+    if userbot_client:
+        try:
+            logger.info("Disconnecting userbot client for session removal")
+            if userbot_client.is_connected():
+                await userbot_client.disconnect()
+            # Give it a moment to release locks
+            await asyncio.sleep(1)
+        except Exception as e:
+            logger.error(f"Error disconnecting userbot client: {e}")
+
     session_file = f"{Config.SESSION_NAME}.session"
-    session_journal = f"{Config.SESSION_NAME}.session-journal"
+    # Also clean up journal and other possible temporary sqlite files
+    to_delete = [
+        session_file,
+        f"{session_file}-journal",
+        f"{session_file}-wal",
+        f"{session_file}-shm"
+    ]
     
     deleted = False
+    for filepath in to_delete:
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+                if filepath == session_file:
+                    deleted = True
+                logger.info(f"Removed session-related file: {filepath}")
+            except Exception as e:
+                logger.error(f"Failed to remove {filepath}: {e}")
     
-    if os.path.exists(session_file):
-        try:
-            os.remove(session_file)
-            deleted = True
-            logger.info(f"Session file removed: {session_file}")
-        except Exception as e:
-            logger.error(f"Failed to remove session file: {e}")
-    
-    if os.path.exists(session_journal):
-        try:
-            os.remove(session_journal)
-            logger.info(f"Session journal removed: {session_journal}")
-        except Exception as e:
-            logger.error(f"Failed to remove session journal: {e}")
-    
+    # Reset the wrapper and client instance AFTER file deletion
+    if userbot_wrapper:
+        userbot_wrapper._client = None
+        userbot_client = userbot_wrapper.get_client()
+        logger.info("Userbot client reset in wrapper after session removal")
+
     if deleted:
         await event.reply(
             "🗑️ <b>Session Removed</b>\n\n"
