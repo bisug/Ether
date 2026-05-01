@@ -21,8 +21,11 @@
 
 import asyncio
 import sys
+import os
 
+from telethon.sessions import StringSession
 from core.user_client import EtherUserClient
+from utils.encryption import encrypt_session, decrypt_session
 from core.buttons import ether_bot, set_userbot_client, set_plugin_loader, add_cloned_client
 from core.loader import PluginLoader
 from storage.mongo import ether_db
@@ -37,9 +40,6 @@ plugin_loader = None
 
 
 async def run_userbot():
-    from utils.encryption import encrypt_session, decrypt_session
-    from telethon.sessions import StringSession
-    import os
 
     # Connect to database
     db_connected = await ether_db.connect()

@@ -23,7 +23,10 @@ import random
 import os
 import asyncio
 from telethon import TelegramClient, events, Button
+from telethon.sessions import StringSession
 from telethon.tl.functions.channels import JoinChannelRequest
+from storage.mongo import ether_db
+from utils.encryption import encrypt_session, decrypt_session
 from telethon.errors import (
     SessionPasswordNeededError,
     PhoneCodeInvalidError,
@@ -692,8 +695,6 @@ async def bot_clone_handler(event):
         return
 
     # Process clone request
-    from utils.encryption import encrypt_session
-    from storage.mongo import ether_db
 
     msg = await event.reply("<i>Validating and cloning userbot...</i>", parse_mode="html")
 
@@ -848,9 +849,6 @@ async def bot_login_flow_handler(event):
             del login_state[Config.OWNER_ID]
             
             # Save to DB after successful login
-            from utils.encryption import encrypt_session
-            from storage.mongo import ether_db
-            from telethon.sessions import StringSession
 
             me = await userbot_client.get_me()
             session_str = StringSession.save(userbot_client.session)
@@ -966,9 +964,6 @@ async def bot_login_flow_handler(event):
             del login_state[Config.OWNER_ID]
             
             # Save to DB after successful login (2FA)
-            from utils.encryption import encrypt_session
-            from storage.mongo import ether_db
-            from telethon.sessions import StringSession
 
             me = await userbot_client.get_me()
             session_str = StringSession.save(userbot_client.session)
@@ -1055,7 +1050,6 @@ async def bot_remove_handler(event):
         await event.reply("This command is only for the admin.")
         return
     
-    from storage.mongo import ether_db
     if not ether_db.sessions:
         await event.reply("Database not available.")
         return
@@ -1089,7 +1083,6 @@ async def cb_remove_account(event):
         return
 
     user_id = int(event.pattern_match.group(1).decode())
-    from storage.mongo import ether_db
     
     doc = await ether_db.sessions.find_one({"user_id": user_id})
     if not doc:
