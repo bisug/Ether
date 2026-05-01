@@ -45,6 +45,7 @@ def setup(ether, db, owner_id):
         
         if not bot_username:
             await event.reply(
+                "<blockquote>"
                 "🔥 <b>Ether Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
@@ -53,7 +54,8 @@ def setup(ether, db, owner_id):
                 "<code>.setwelcome</code> - Set welcome\n"
                 "<code>.allow</code> - Allow user\n"
                 "<code>.disallow</code> - Disallow user\n\n"
-                "<i>Add BOT_USERNAME to .env for button UI.</i>",
+                "<i>Add BOT_USERNAME to .env for button UI.</i>"
+                "</blockquote>",
                 parse_mode="html"
             )
             return
@@ -67,6 +69,7 @@ def setup(ether, db, owner_id):
                 await results[0].click(event.chat_id)
             else:
                 await event.respond(
+                    "<blockquote>"
                     "🔥 <b>Ether Help</b>\n\n"
                     "<code>.commands</code> - List all commands\n"
                     "<code>.ping</code> - Check latency\n"
@@ -74,12 +77,14 @@ def setup(ether, db, owner_id):
                     "<code>.get &lt;name&gt;</code> - Get shortcut\n"
                     "<code>.setwelcome</code> - Set welcome\n"
                     "<code>.allow</code> - Allow user\n\n"
-                    "<i>Bot inline query failed.</i>",
+                    "<i>Bot inline query failed.</i>"
+                    "</blockquote>",
                     parse_mode="html"
                 )
         except Exception as e:
             logger.error(f"Inline help failed: {e}")
             await event.respond(
+                "<blockquote>"
                 "🔥 <b>Ether Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
@@ -87,7 +92,8 @@ def setup(ether, db, owner_id):
                 "<code>.get &lt;name&gt;</code> - Get shortcut\n"
                 "<code>.setwelcome</code> - Set welcome\n"
                 "<code>.allow</code> - Allow user\n"
-                "<code>.disallow</code> - Disallow user",
+                "<code>.disallow</code> - Disallow user"
+                "</blockquote>",
                 parse_mode="html"
             )
     

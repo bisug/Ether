@@ -31,8 +31,10 @@ class ShortcutService:
     
     async def save_shortcut(self, owner_id: int, name: str, text: str, 
                            image: Optional[str] = None, 
-                           buttons: Optional[List[Dict[str, str]]] = None) -> bool:
-        """Save a shortcut with the given name."""
+                           buttons: Optional[List[Dict[str, str]]] = None,
+                           file: Optional[str] = None,
+                           media_type: Optional[str] = None) -> bool:
+                           
         if self.shortcuts is None:
             return False
         
@@ -46,6 +48,16 @@ class ShortcutService:
             data["image"] = image
         else:
             data["image"] = None
+        
+        if file:
+            data["file"] = file
+        else:
+            data["file"] = None
+        
+        if media_type:
+            data["media_type"] = media_type
+        else:
+            data["media_type"] = None
         
         if buttons:
             data["buttons"] = buttons

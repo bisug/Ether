@@ -59,6 +59,8 @@ def setup(ether, db, owner_id):
                     SHORTCUT_DATA[name] = {
                         "text": shortcut.get("text", ""),
                         "image": shortcut.get("image"),
+                        "file": shortcut.get("file"),
+                        "media_type": shortcut.get("media_type"),
                         "buttons": shortcut.get("buttons")
                     }
                     
@@ -82,25 +84,70 @@ def setup(ether, db, owner_id):
         
         if not event.is_reply:
             await event.reply(
+                "<blockquote>"
                 "⚠️ Reply to the message you want to save as a shortcut.\n\n"
-                "📝 <b>Supported:</b>\n"
-                "• Text with **bold**, __italic__, `code`\n"
+                "📝 <b>Supported Formatting:</b>\n"
+                "• <b>Bold:</b> Use <code>**text**</code> or <code>__text__</code>\n"
+                "• <i>Italic:</i> Use <code>__text__</code>\n"
+                "• <code>Code:</code> Use <code>`text`</code>\n\n"
+                "📎 <b>Supported Media:</b>\n"
                 "• Images (photos)\n"
-                "• Inline buttons (URL or callback)\n\n"
+                "• Audio files\n"
+                "• Videos\n"
+                "• Documents/Files (ZIP, PDF, etc.)\n"
+                "• Voice notes\n"
+                "• Stickers\n\n"
                 "📌 <b>Button Format:</b>\n"
-                "<code>[Button.url('🌐 My Site', 'https://example.com')]</code>\n"
+                "<code>[Button.url('Button Text', 'https://example.com')]</code>\n"
                 "💡 <b>Tip:</b> Include button code in your message text."
+                "</blockquote>",
+                parse_mode="html"
             )
             return
         
         msg = await event.get_reply_message()
         
         image_path = None
+        file_path = None
+        media_type = None
+        
+        # Handle different media types
         if msg.photo:
             try:
                 image_path = await msg.download_media(file=f"media/shortcut_{name}.jpg")
+                media_type = "photo"
             except Exception as e:
                 logger.error(f"Failed to download shortcut image: {e}")
+        elif msg.audio:
+            try:
+                file_path = await msg.download_media(file=f"media/shortcut_{name}_audio")
+                media_type = "audio"
+            except Exception as e:
+                logger.error(f"Failed to download shortcut audio: {e}")
+        elif msg.video:
+            try:
+                file_path = await msg.download_media(file=f"media/shortcut_{name}_video")
+                media_type = "video"
+            except Exception as e:
+                logger.error(f"Failed to download shortcut video: {e}")
+        elif msg.document:
+            try:
+                file_path = await msg.download_media(file=f"media/shortcut_{name}_file")
+                media_type = "document"
+            except Exception as e:
+                logger.error(f"Failed to download shortcut file: {e}")
+        elif msg.voice:
+            try:
+                file_path = await msg.download_media(file=f"media/shortcut_{name}_voice")
+                media_type = "voice"
+            except Exception as e:
+                logger.error(f"Failed to download shortcut voice: {e}")
+        elif msg.sticker:
+            try:
+                file_path = await msg.download_media(file=f"media/shortcut_{name}_sticker")
+                media_type = "sticker"
+            except Exception as e:
+                logger.error(f"Failed to download shortcut sticker: {e}")
         
         raw_text = msg.text or ""
         parsed_text = parse_links(raw_text)
@@ -165,17 +212,21 @@ def setup(ether, db, owner_id):
                     buttons = button_rows
         
         try:
-            await shortcut_service.save_shortcut(owner_id, name, parsed_text, image_path, buttons)
+            await shortcut_service.save_shortcut(owner_id, name, parsed_text, image_path, buttons, file_path, media_type)
             
             SHORTCUT_DATA[name.lower()] = {
                 "text": parsed_text,
                 "image": image_path,
+                "file": file_path,
+                "media_type": media_type,
                 "buttons": buttons
             }
             
             response = f"✅ Shortcut '{name}' saved."
             if image_path:
                 response += "\n📷 Image included."
+            if file_path:
+                response += f"\n📎 {media_type or 'File'} included."
             if buttons:
                 response += f"\n🔘 {len(buttons)} button rows included."
             await event.edit(response)
@@ -198,11 +249,13 @@ def setup(ether, db, owner_id):
         shortcut = await shortcut_service.get_shortcut(owner_id, name)
         
         if not shortcut:
-            await event.reply(f"❌ Shortcut '{name}' not found.")
+            await event.reply(f"<blockquote>❌ Shortcut '{name}' not found.</blockquote>", parse_mode="html")
             return
         
         text = shortcut.get("text", "")
         image = shortcut.get("image")
+        file_path = shortcut.get("file")
+        media_type = shortcut.get("media_type")
         buttons = shortcut.get("buttons")
         
         async def send_shortcut_message(text: str, target_chat=None) -> None:
@@ -219,8 +272,23 @@ def setup(ether, db, owner_id):
                             return
                     except Exception as inline_err:
                         logger.error(f"Inline query failed: {inline_err}")
+                
+                # Handle different media types when sending
                 if image:
                     await ether.send_file(chat_id, file=image, caption=text, parse_mode="html")
+                elif file_path and media_type:
+                    if media_type == "audio":
+                        await ether.send_file(chat_id, file=file_path, caption=text, parse_mode="html")
+                    elif media_type == "video":
+                        await ether.send_file(chat_id, file=file_path, caption=text, parse_mode="html")
+                    elif media_type == "document":
+                        await ether.send_file(chat_id, file=file_path, caption=text, parse_mode="html")
+                    elif media_type == "voice":
+                        await ether.send_file(chat_id, file=file_path, caption=text, parse_mode="html", voice_note=True)
+                    elif media_type == "sticker":
+                        await ether.send_file(chat_id, file=file_path)
+                    else:
+                        await ether.send_file(chat_id, file=file_path, caption=text, parse_mode="html")
                 else:
                     await ether.send_message(chat_id, text, parse_mode="html")
             except Exception as e:
@@ -270,7 +338,7 @@ def setup(ether, db, owner_id):
         shortcuts = await shortcut_service.list_shortcuts(owner_id)
         
         if not shortcuts:
-            await event.reply("📭 No shortcuts saved yet.\n\nUse .shortcut <name> to save one.")
+            await event.reply("<blockquote>📭 No shortcuts saved yet.\n\nUse .shortcut <name> to save one.</blockquote>", parse_mode="html")
         else:
             shortcut_list = "\n".join(f"• <code>{s}</code>" for s in shortcuts)
-            await event.reply(f"📋 <b>Your Shortcuts:</b>\n\n{shortcut_list}\n\n<i>Total: {len(shortcuts)}</i>", parse_mode="html")
+            await event.reply(f"<blockquote>📋 <b>Your Shortcuts:</b>\n\n{shortcut_list}\n\n<i>Total: {len(shortcuts)}</i></blockquote>", parse_mode="html")

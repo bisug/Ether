@@ -51,6 +51,12 @@ def setup(ether, db, owner_id):
         if not settings.get("enabled"):
             return
     
+        # Check if sender is in allowed list (whitelist)
+        allowed = settings.get("allowed", [])
+        if event.sender_id in allowed:
+            logger.info(f"User {event.sender_id} is allowed, skipping filter")
+            return
+    
         text = event.raw_text or ""
     
         block = False
@@ -79,7 +85,7 @@ def setup(ether, db, owner_id):
             return
     
         if not event.is_reply:
-            await event.reply("❌ Reply to a user DM to allow them.")
+            await event.reply("<blockquote>❌ Reply to a user DM to allow them.</blockquote>", parse_mode="html")
             return
     
         reply = await event.get_reply_message()
@@ -89,12 +95,15 @@ def setup(ether, db, owner_id):
     
         allowed = settings.get("allowed", [])
     
-        if user_id not in allowed:
-            allowed.append(user_id)
-            settings["allowed"] = allowed
-            await shield.save(owner_id, settings)
+        if user_id in allowed:
+            await event.reply(f"<blockquote>ℹ️ User {user_id} is already in the allowed list.</blockquote>", parse_mode="html")
+            return
+        
+        allowed.append(user_id)
+        settings["allowed"] = allowed
+        await shield.save(owner_id, settings)
     
-        await event.reply(f"✅ User {user_id} is now ALLOWED in DM Shield")
+        await event.reply(f"<blockquote>✅ User {user_id} is now ALLOWED in DM Shield</blockquote>", parse_mode="html")
     
 # ============================================
 # Shield Disallow
@@ -107,7 +116,7 @@ def setup(ether, db, owner_id):
             return
     
         if not event.is_reply:
-            await event.reply("❌ Reply to a user DM to disallow them.")
+            await event.reply("<blockquote>❌ Reply to a user DM to disallow them.</blockquote>", parse_mode="html")
             return
     
         reply = await event.get_reply_message()
@@ -117,12 +126,15 @@ def setup(ether, db, owner_id):
     
         allowed = settings.get("allowed", [])
     
-        if user_id in allowed:
-            allowed.remove(user_id)
-            settings["allowed"] = allowed
-            await shield.save(owner_id, settings)
+        if user_id not in allowed:
+            await event.reply(f"<blockquote>ℹ️ User {user_id} is not in the allowed list.</blockquote>", parse_mode="html")
+            return
+        
+        allowed.remove(user_id)
+        settings["allowed"] = allowed
+        await shield.save(owner_id, settings)
     
-        await event.reply(f"❌ User {user_id} is now REMOVED from allowed list")
+        await event.reply(f"<blockquote>❌ User {user_id} is now REMOVED from allowed list</blockquote>", parse_mode="html")
     
     
 # ============================================
@@ -136,19 +148,23 @@ def setup(ether, db, owner_id):
             return
 
         settings = await shield.get(owner_id)
+        allowed = settings.get("allowed", [])
 
         msg = (
+            "<blockquote>"
             "🛡️ <b>DM Shield System</b>\n\n"
             "<b>Status:</b>\n"
             f"Enabled: {'✅' if settings.get('enabled') else '❌'}\n"
             f"Links: {'✅' if settings.get('link') else '❌'}\n"
-            f"Usernames: {'✅' if settings.get('username') else '❌'}\n\n"
+            f"Usernames: {'✅' if settings.get('username') else '❌'}\n"
+            f"Allowed Users: {len(allowed)}\n\n"
             "<b>Commands:</b>\n"
             "<code>.shield on</code>\n"
             "<code>.shield off</code>\n"
             "<code>.shield link</code>\n"
             "<code>.shield user</code>\n"
             "<code>.shield status</code>"
+            "</blockquote>"
         )
 
         await event.reply(msg, parse_mode="html")
@@ -167,7 +183,7 @@ def setup(ether, db, owner_id):
         settings["enabled"] = True
         await shield.save(owner_id, settings)
 
-        await event.reply("🛡️ Shield ENABLED")
+        await event.reply("<blockquote>🛡️ Shield ENABLED</blockquote>", parse_mode="html")
 
 
 # ============================================
@@ -184,7 +200,7 @@ def setup(ether, db, owner_id):
         settings["enabled"] = False
         await shield.save(owner_id, settings)
 
-        await event.reply("❌ Shield DISABLED")
+        await event.reply("<blockquote>❌ Shield DISABLED</blockquote>", parse_mode="html")
 
 
 # ============================================
@@ -202,7 +218,8 @@ def setup(ether, db, owner_id):
         await shield.save(owner_id, settings)
 
         await event.reply(
-            f"🔗 Links {'ENABLED' if settings['link'] else 'DISABLED'}"
+            f"<blockquote>🔗 Links {'ENABLED' if settings['link'] else 'DISABLED'}</blockquote>",
+            parse_mode="html"
         )
 
 
@@ -221,7 +238,8 @@ def setup(ether, db, owner_id):
         await shield.save(owner_id, settings)
 
         await event.reply(
-            f"👤 Usernames {'ENABLED' if settings['username'] else 'DISABLED'}"
+            f"<blockquote>👤 Usernames {'ENABLED' if settings['username'] else 'DISABLED'}</blockquote>",
+            parse_mode="html"
         )
 
 
@@ -238,9 +256,11 @@ def setup(ether, db, owner_id):
         settings = await shield.get(owner_id)
 
         await event.reply(
+            "<blockquote>"
             "🛡️ <b>Shield Status</b>\n\n"
             f"Enabled: {'✅' if settings.get('enabled') else '❌'}\n"
             f"Links: {'✅' if settings.get('link') else '❌'}\n"
-            f"Usernames: {'✅' if settings.get('username') else '❌'}",
+            f"Usernames: {'✅' if settings.get('username') else '❌'}"
+            "</blockquote>",
             parse_mode="html"
         )

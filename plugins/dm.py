@@ -36,16 +36,22 @@ logger = get_logger("EtherDM")
 # ============================================
 
 DEFAULT_WELCOME_TEXT = (
-    "⚡ <b>Ether Userbot</b>\n\n"
-    "👋 Welcome!\n\n"
     "<blockquote>"
-    "⚠️ This user is currently protected by DM Shield system.\n"
-    "📵 Direct messaging is monitored and controlled.\n\n"
-    "🔒 No custom welcome message has been set yet.\n\n"
-    "🤖 This is an automated response from Ether Userbot."
-    "</blockquote>\n\n"
-    "⏳ Please wait for a reply or try again later."
+    "👋 Hello!\n\n"
+    "You've just reached Ether Userbot ⚡️\n\n"
+    "This DM is protected to prevent spam and unwanted messages.\n\n"
+    "⭐️ What you can do:\n\n"
+    "• Wait for approval\n"
+    "• Use buttons below for support\n\n"
+    "🕔 You'll be reviewed soon. Stay patient."
+    "</blockquote>"
 )
+
+DEFAULT_WELCOME_IMAGE = "assets/ether_logo.png"
+
+DEFAULT_WELCOME_BUTTONS = [
+    [{"text": "Userbot Repo", "url": "https://github.com/LearningBotsOfficial/Ether", "type": "url"}]
+]
 
 
 def setup(ether, db, owner_id):
@@ -77,7 +83,7 @@ def setup(ether, db, owner_id):
             return
         
         if not event.is_private:
-            await event.edit("❌ Use in private chat.")
+            await event.edit("<blockquote>❌ Use in private chat.</blockquote>", parse_mode="html")
             return
         
         user_id = event.chat_id
@@ -90,7 +96,7 @@ def setup(ether, db, owner_id):
             return
         
         if not event.is_private:
-            await event.edit("❌ Use in private chat.")
+            await event.edit("<blockquote>❌ Use in private chat.</blockquote>", parse_mode="html")
             return
         
         user_id = event.chat_id
@@ -109,14 +115,18 @@ def setup(ether, db, owner_id):
         
         if not event.is_reply:
             await event.reply(
+                "<blockquote>"
                 "⚠️ Reply to the message you want as welcome text.\n\n"
-                "📝 <b>Supported:</b>\n"
-                "• Text with **bold**, __italic__, `code`\n"
-                "• Images (photos)\n"
-                "• Inline buttons (URL or callback)\n\n"
+                "📝 <b>Supported Formatting:</b>\n"
+                "• <b>Bold:</b> Use <code>**text**</code> or <code>__text__</code>\n"
+                "• <i>Italic:</i> Use <code>__text__</code>\n"
+                "• <code>Code:</code> Use <code>`text`</code>\n"
+                "• Images (photos)\n\n"
                 "📌 <b>Button Format:</b>\n"
-                "<code>[Button.url('🌐 My Site', 'https://example.com')]</code>\n"
+                "<code>[Button.url('Button Text', 'https://example.com')]</code>\n"
                 "💡 <b>Tip:</b> Include button code in your message text."
+                "</blockquote>",
+                parse_mode="html"
             )
             return
         
@@ -206,7 +216,7 @@ def setup(ether, db, owner_id):
             await event.edit(response)
         except Exception as e:
             logger.error(f"Failed to save welcome: {e}")
-            await event.edit("❌ Failed to save welcome message.")
+            await event.edit("<blockquote>❌ Failed to save welcome message.</blockquote>", parse_mode="html")
     
 
 # ============================================
@@ -238,13 +248,22 @@ def setup(ether, db, owner_id):
         max_warns = int(event.pattern_match.group(1))
         
         await dm_service.set_global_max_warns(owner_id, max_warns)
-        await event.edit(f"⚠️ Global max warnings set to {max_warns}.")
+        await event.edit(f"<blockquote>⚠️ Global max warnings set to {max_warns}.</blockquote>", parse_mode="html")
     
     @ether.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
     async def dm_handler(event):
 
+        # Check if sender is a bot - skip all processing for bots
         if event.sender and event.sender.bot:
             return
+        
+        # Additional bot check using sender_id if sender object is not available
+        try:
+            sender = await event.get_sender()
+            if sender and hasattr(sender, 'bot') and sender.bot:
+                return
+        except:
+            pass
 
         if event.sender_id == owner_id:
             return
@@ -258,14 +277,15 @@ def setup(ether, db, owner_id):
         welcome_config = await dm_service.get_welcome(owner_id)
         
         welcome_text = welcome_config.get("text") or DEFAULT_WELCOME_TEXT
-        welcome_image = welcome_config.get("image")
+        welcome_image = welcome_config.get("image") or DEFAULT_WELCOME_IMAGE
+        welcome_buttons = welcome_config.get("buttons") or DEFAULT_WELCOME_BUTTONS
         
         async def send_welcome(text: str) -> None:
             try:
-                if bot_username and welcome_config.get("buttons"):
+                if bot_username and welcome_buttons:
                     
                     WELCOME_DATA["text"] = text
-                    WELCOME_DATA["buttons"] = welcome_config.get("buttons")
+                    WELCOME_DATA["buttons"] = welcome_buttons
                     
                     try:
                         results = await ether.inline_query(bot_username, "welcome")
@@ -289,7 +309,7 @@ def setup(ether, db, owner_id):
         
         if user.get("blocked"):
             try:
-                await event.reply("⛔ You are blocked from contacting this user.")
+                await event.reply("<blockquote>⛔ You are blocked from contacting this user.</blockquote>", parse_mode="html")
                 await ether(BlockRequest(user_id))
             except Exception as e:
                 logger.error(f"Block error for {user_id}: {e}")

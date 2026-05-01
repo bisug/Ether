@@ -40,12 +40,12 @@ def setup(ether, db, owner_id):
             return
         
         if not event.is_group:
-            await event.reply("❌ This command works only in groups.")
+            await event.reply("<blockquote>❌ This command works only in groups.</blockquote>", parse_mode="html")
             return
         
         message = event.pattern_match.group(1) or "Hello!"
         
-        await event.reply("🚀 Starting TagAll... (safe mode)")
+        await event.reply("<blockquote>🚀 Starting TagAll... (safe mode)</blockquote>", parse_mode="html")
         
         users = []
         
@@ -56,7 +56,7 @@ def setup(ether, db, owner_id):
             users.append(user)
         
         if not users:
-            await event.reply("❌ No users found.")
+            await event.reply("<blockquote>❌ No users found.</blockquote>", parse_mode="html")
             return
         
         # Apply safety limit
@@ -89,4 +89,4 @@ def setup(ether, db, owner_id):
             
             await asyncio.sleep(DELAY)
         
-        await event.reply(f"✅ TagAll completed. Tagged {sent} users safely.")
+        await event.reply(f"<blockquote>✅ TagAll completed. Tagged {sent} users safely.</blockquote>", parse_mode="html")
