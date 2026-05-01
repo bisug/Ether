@@ -1,0 +1,61 @@
+{
+  "name": "Ether Userbot",
+  "description": "A high-performance, modular Telegram userbot architecture built with Telethon + MongoDB.",
+  "repository": "https://github.com/LearningBotsOfficial/Ether",
+  "logo": "https://i.ibb.co/rKM4mfnx/x.jpg",
+  "keywords": ["telegram", "userbot", "telethon", "modular"],
+  "env": {
+    "API_ID": {
+      "description": "Your Telegram API ID from my.telegram.org",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Your Telegram API Hash from my.telegram.org",
+      "required": true
+    },
+    "BOT_TOKEN": {
+      "description": "Your Bot Token from @BotFather",
+      "required": true
+    },
+    "OWNER_ID": {
+      "description": "Your Telegram User ID (numeric)",
+      "required": true
+    },
+    "BOT_USERNAME": {
+      "description": "Your Bot Username (without @)",
+      "required": true,
+      "value": "etheruserbot"
+    },
+    "MONGO_URI": {
+      "description": "Your MongoDB connection string. You can get one for free at mongodb.com",
+      "required": true
+    },
+    "DB_NAME": {
+      "description": "The name of the database to use",
+      "required": false,
+      "value": "Ether"
+    },
+    "SESSION_NAME": {
+      "description": "The name of the session file",
+      "required": false,
+      "value": "etheruserbot"
+    },
+    "SESSION_DIR": {
+      "description": "The directory to store session files",
+      "required": false,
+      "value": "sessions"
+    },
+    "DEBUG": {
+      "description": "Set to True to enable debug logging",
+      "required": false,
+      "value": "False"
+    }
+  },
+  "stack": "container",
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
+}
