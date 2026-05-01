@@ -42,36 +42,93 @@ Unlike traditional userbots that require risky "String Sessions" generated via t
 
 ---
 
-## 🚀 Quickstart
+# 🚀🔴 HOW TO DEPLOY ETHER USERBOT (FREE & FAST HOSTING GUIDE)
 
-### Prerequisites
-- **Python 3.9 or higher** (Tested on Python 3.12)
-- MongoDB Instance (optional, but recommended)
-- Telegram `API_ID` & `API_HASH` (Get them at [my.telegram.org](https://my.telegram.org))
-- Bot Token from [@BotFather](https://t.me/BotFather)
+<details>
+<summary><b>CLICK HERE TO EXPAND DEPLOYMENT GUIDE</b></summary>
 
-### Installation
+---
 
-```bash
-# Clone the repository
-git clone https://github.com/LearningBotsOfficial/Ether.git
-cd Ether
+## ▸ ABOUT
+We’ve found a **free + fast hosting platform** for you to easily deploy your userbot.  
+Follow all steps carefully.
 
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate  # On Windows
-source venv/bin/activate  # On Linux/Mac
+---
 
-# Install dependencies
-pip install -r requirements.txt
+## ▸ STEP 1: DOWNLOAD THE PROJECT
 
-# Configure environment
-# Copy .env.example to .env and fill in your credentials
-# Or create .env manually with required variables
+1. First, **fork the repository**  
+   Link :- https://github.com/LearningBotsOfficial/Ether  
 
-# Launch
-python main.py
+2. Click on the **green "Code" button**  
+3. Select **"Download ZIP"** and save it to your device  
+
+---
+
+## ▸ STEP 2: UPLOAD ON HOSTING SITE
+
+1. Go to: https://justrunmy.app/  
+2. **Sign up / Login**  
+3. Upload the **ZIP file** you downloaded  
+4. Wait until the upload & setup process completes  
+
+---
+
+## ▸ STEP 3: FILL REQUIRED DETAILS
+
+You will be asked to enter the following:
+
 ```
+API_ID=
+API_HASH=
+OWNER_ID=
+BOT_TOKEN=
+BOT_USERNAME=etheruserbot
+SESSION_NAME=etheruserbot
+SESSION_DIR=sessions
+MONGO_URI=
+DB_NAME=Ether
+
+DEBUG=False
+```
+
+- Fill in your **own details** for API_ID, API_HASH, BOT_TOKEN, etc.  
+- Keep default values as provided where already mentioned  
+
+---
+
+## ▸ STEP 4: START YOUR BOT
+
+1. Click on **Continue**  
+2. Wait for deployment to complete  
+3. Once done, your bot is live  
+
+---
+
+## ▸ STEP 5: LOGIN & ACTIVATE
+
+1. Open your bot  
+2. Send: `/start`  
+3. Then send: `/login`  
+4. Complete login safely  
+
+---
+
+## ▸ DONE
+
+Your userbot is now running with **100% safety**  
+
+Some steps are shown in the video — watch it for better understanding  
+
+---
+
+## ▸ SUPPORT
+
+If you face any issues, feel free to ask for help  
+
+---
+
+</details>
 
 ---
 
