@@ -1,0 +1,17 @@
+.git
+.env
+__pycache__
+*.pyc
+venv
+.venv
+sessions/
+*.session
+*.session-journal
+logs/
+*.log
+media/
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+LICENSE
