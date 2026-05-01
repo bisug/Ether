@@ -12,9 +12,9 @@
 #  License:       Open Source (Keep Credits)
 #
 #  IMPORTANT:
-#    • If you copy, fork, or reuse this project or any part of it,
+#    - If you copy, fork, or reuse this project or any part of it,
 #      you MUST retain original credits.
-#    • Proper attribution to Ether project is required.
+#    - Proper attribution to Ether project is required.
 #
 #  Thank you for respecting open-source development.
 # =============================================================================
@@ -39,13 +39,13 @@ def setup(ether, db, owner_id):
 
         if event.sender_id != owner_id:
             return
-        msg = await event.reply("🏓 <i>Pinging...</i>", parse_mode="html")
+        msg = await event.reply("<i>Pinging...</i>", parse_mode="html")
         
         latency = int((time.time() - start) * 1000)
         
         await msg.edit(
-            f"🏓 <b>Pong!</b>\n"
-            f"⚡ <code>{latency}ms</code>",
+            f"<b>Pong!</b>\n"
+            f"<code>{latency}ms</code>",
             parse_mode="html"
         )
         
