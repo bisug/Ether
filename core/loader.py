@@ -40,7 +40,9 @@ class PluginLoader:
         self.owner_id = owner_id
         self.loaded: List[str] = []
     
-    def load_all(self) -> None:
+    def load_all(self, client: Optional[TelegramClient] = None) -> None:
+        """Load all plugins for the given client or the default client."""
+        target_client = client or self.client
         plugins_path = Path(self.PLUGINS_DIR)
         
         if not plugins_path.exists():
@@ -54,30 +56,36 @@ class PluginLoader:
         ]
         
         for file_path in sorted(plugin_files):
-            self._load_plugin(file_path)
+            self._load_plugin(file_path, target_client)
         
-        logger.info(f"Loaded {len(self.loaded)} plugins: {', '.join(self.loaded)}")
+        if not client:
+            logger.info(f"Loaded {len(self.loaded)} plugins: {', '.join(self.loaded)}")
+        else:
+            logger.info(f"Loaded {len(plugin_files)} plugins for additional client")
     
-    def _load_plugin(self, file_path: Path) -> None:
-        """Load a single plugin file."""
+    def _load_plugin(self, file_path: Path, client: TelegramClient) -> None:
+        """Load a single plugin file for a specific client."""
         module_name = file_path.stem
         full_module = f"{self.PLUGINS_DIR}.{module_name}"
         
         try:
-            # Import the module
+            # Import the module (or get from sys.modules if already loaded)
             module = importlib.import_module(full_module)
+            # Re-import doesn't happen if it's already in sys.modules,
+            # but we want to call setup() again with the new client.
             
             # Check for setup function
             if hasattr(module, "setup"):
                 setup_func = getattr(module, "setup")
                 setup_func(
-                    ether=self.client,
+                    ether=client,
                     db=self.db,
                     owner_id=self.owner_id
                 )
                 
-                self.loaded.append(module_name)
-                logger.info(f" Loaded plugin: {module_name}")
+                if module_name not in self.loaded:
+                    self.loaded.append(module_name)
+                logger.info(f" Loaded plugin {module_name} for client")
             else:
                 logger.warning(f" Plugin {module_name} has no setup() function")
                 

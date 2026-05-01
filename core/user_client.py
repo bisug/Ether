@@ -44,6 +44,10 @@ class EtherUserClient:
     @property
     def client(self) -> TelegramClient:
         if self._client is None:
+            from telethon.sessions import StringSession
+            # If a session string is provided in Config, use it.
+            # Otherwise use the default session file name.
+            # This will be handled during startup in main.py
             self._client = TelegramClient(
                 Config.SESSION_NAME,
                 Config.API_ID,
@@ -51,10 +55,20 @@ class EtherUserClient:
             )
         return self._client
 
-    async def connect(self) -> bool:
+    def create_string_client(self, session_string: str) -> TelegramClient:
+        """Create a new TelegramClient instance from a string session."""
+        from telethon.sessions import StringSession
+        return TelegramClient(
+            StringSession(session_string),
+            Config.API_ID,
+            Config.API_HASH
+        )
+
+    async def connect(self, client: TelegramClient = None) -> bool:
+        target_client = client or self.client
         try:
-            await self.client.connect()
-            logger.info("Telegram client connected")
+            await target_client.connect()
+            logger.info(f"Telegram client connected")
             return True
         except Exception as e:
             logger.error(f"Connection failed: {e}")
@@ -75,11 +89,13 @@ class EtherUserClient:
         except Exception as e:
             logger.error(f"Disconnect error: {e}")
 
-    async def is_authorized(self) -> bool:
+    async def is_authorized(self, client: TelegramClient = None) -> bool:
+        target_client = client or self.client
         try:
-            authorized = await self.client.is_user_authorized()
-            if authorized and not self.me:
-                await self.fetch_me()
+            authorized = await target_client.is_user_authorized()
+            if authorized:
+                if target_client == self.client and not self.me:
+                    await self.fetch_me()
             return authorized
         except Exception as e:
             logger.error(f"Auth check failed: {e}")

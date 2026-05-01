@@ -23,7 +23,10 @@ import random
 import os
 import asyncio
 from telethon import TelegramClient, events, Button
+from telethon.sessions import StringSession
 from telethon.tl.functions.channels import JoinChannelRequest
+from storage.mongo import ether_db
+from utils.encryption import encrypt_session, decrypt_session
 from telethon.errors import (
     SessionPasswordNeededError,
     PhoneCodeInvalidError,
@@ -45,6 +48,7 @@ login_state = {}
 userbot_client = None
 userbot_wrapper = None
 plugin_loader = None
+cloned_clients = {} # {user_id: client}
 
 HELP_DATA = {
     "text": "<b>Ether Userbot Help Guide</b>",
@@ -559,8 +563,10 @@ async def cb_bot(event):
         "<code>/start</code> - Initialize the bot and view welcome message\n"
         "<code>/help</code> - View help menu\n"
         "<code>/login</code> - Securely authenticate your account (Admin only)\n"
+        "<code>/clone</code> - Instructions & risk info for cloning\n"
+        "<code>/clone &lt;session&gt;</code> - Clone a userbot instance\n"
         "<code>/cancel</code> - Cancel ongoing login process (Admin only)\n"
-        "<code>/remove</code> - Delete current session file (Admin only)",
+        "<code>/remove</code> - Select an account to remove from system",
         buttons=[[Button.inline("Back", b"help_back")]],
         parse_mode="html"
     )
@@ -660,6 +666,95 @@ async def bot_login_handler(event):
     )
     logger.info(f"Login initiated by owner {Config.OWNER_ID}")
 
+# ============================================
+# Bot Clone Handler
+# ============================================
+
+@bot.on(events.NewMessage(pattern=r"^/clone(?:\s+(.+))?$", incoming=True, func=lambda e: e.is_private))
+async def bot_clone_handler(event):
+    if event.sender_id != Config.OWNER_ID:
+        await event.reply("This command is only for the admin.")
+        return
+
+    session_string = event.pattern_match.group(1)
+    bot_name = get_bot_name()
+
+    if not session_string:
+        # Show instructions and risks
+        instructions = (
+            f"<b>{bot_name} Clone System</b>\n\n"
+            "To clone a userbot, use <code>/clone STRING_SESSION</code>\n\n"
+            "<b>How to get String Session?</b>\n"
+            "Visit: <a href='https://telegram.tools/session-string-generator#telethon,user'>Telegram Tools</a>\n\n"
+            "<b>⚠️ IMPORTANT & RISKY</b>\n"
+            "String sessions grant full access to your Telegram account. Never share them with anyone.\n"
+            "<b>Avoid using unknown bots</b> to generate sessions as they may steal your account.\n"
+            "Always use the safe and reliable link provided above."
+        )
+        await event.reply(instructions, parse_mode="html", link_preview=False)
+        return
+
+    # Process clone request
+
+    msg = await event.reply("<i>Validating and cloning userbot...</i>", parse_mode="html")
+
+    try:
+        # Try to connect and verify the session string
+        temp_client = userbot_wrapper.create_string_client(session_string)
+        await temp_client.connect()
+
+        if not await temp_client.is_user_authorized():
+            await msg.edit("<b>Invalid Session String</b>\n\nThe provided session string is not authorized or expired.", parse_mode="html")
+            await temp_client.disconnect()
+            return
+
+        me = await temp_client.get_me()
+        user_id = me.id
+
+        # Check if already cloned
+        if ether_db.sessions:
+            existing = await ether_db.sessions.find_one({"user_id": user_id})
+            if existing:
+                await msg.edit(f"<b>Account already cloned:</b> {me.first_name}", parse_mode="html")
+                await temp_client.disconnect()
+                return
+
+            # Encrypt and save to DB
+            encrypted = encrypt_session(session_string)
+            await ether_db.sessions.insert_one({
+                "user_id": user_id,
+                "session": encrypted,
+                "name": me.first_name,
+                "username": me.username,
+                "type": "clone",
+                "added_by": event.sender_id
+            })
+
+            # Start the client and load plugins
+            add_cloned_client(user_id, temp_client)
+
+            if plugin_loader:
+                plugin_loader.load_all(temp_client)
+
+            # Run in background
+            asyncio.create_task(temp_client.run_until_disconnected())
+
+            await msg.edit(
+                f"<b>Userbot Cloned Successfully!</b>\n\n"
+                f"<b>Account:</b> {me.first_name}\n"
+                f"<b>ID:</b> <code>{user_id}</code>\n"
+                "Plugins have been loaded for this account.",
+                parse_mode="html"
+            )
+            logger.info(f"Userbot cloned: {me.first_name} ({user_id})")
+        else:
+            await msg.edit("Database connection not available. Cannot save session.", parse_mode="html")
+            await temp_client.disconnect()
+
+    except Exception as e:
+        logger.error(f"Clone error: {e}")
+        await msg.edit(f"<b>Clone Failed</b>\n\nError: <code>{str(e)}</code>", parse_mode="html")
+
 
 # ============================================
 # Bot Cancel Handler
@@ -753,6 +848,26 @@ async def bot_login_flow_handler(event):
             
             del login_state[Config.OWNER_ID]
             
+            # Save to DB after successful login
+
+            me = await userbot_client.get_me()
+            session_str = StringSession.save(userbot_client.session)
+            encrypted = encrypt_session(session_str)
+
+            if ether_db.sessions:
+                await ether_db.sessions.update_one(
+                    {"user_id": me.id},
+                    {"$set": {
+                        "user_id": me.id,
+                        "session": encrypted,
+                        "name": me.first_name,
+                        "username": me.username,
+                        "type": "main"
+                    }},
+                    upsert=True
+                )
+                logger.info(f"Main session saved to MongoDB for {me.first_name}")
+
             await asyncio.sleep(1)
             await userbot_client.disconnect()
             
@@ -848,6 +963,26 @@ async def bot_login_flow_handler(event):
             
             del login_state[Config.OWNER_ID]
             
+            # Save to DB after successful login (2FA)
+
+            me = await userbot_client.get_me()
+            session_str = StringSession.save(userbot_client.session)
+            encrypted = encrypt_session(session_str)
+
+            if ether_db.sessions:
+                await ether_db.sessions.update_one(
+                    {"user_id": me.id},
+                    {"$set": {
+                        "user_id": me.id,
+                        "session": encrypted,
+                        "name": me.first_name,
+                        "username": me.username,
+                        "type": "main"
+                    }},
+                    upsert=True
+                )
+                logger.info(f"Main session (2FA) saved to MongoDB for {me.first_name}")
+
             await asyncio.sleep(1)
             await userbot_client.disconnect()
             
@@ -915,58 +1050,74 @@ async def bot_remove_handler(event):
         await event.reply("This command is only for the admin.")
         return
     
-    global userbot_client
+    if not ether_db.sessions:
+        await event.reply("Database not available.")
+        return
+
+    cursor = ether_db.sessions.find({"added_by": event.sender_id})
+    buttons = []
+    async for doc in cursor:
+        name = doc.get("name", "Unknown")
+        user_id = doc.get("user_id")
+        buttons.append([Button.inline(f"Remove {name} ({user_id})", f"rm_acc:{user_id}")])
     
-    # Disconnect client first to release file locks
-    if userbot_client:
+    # Also check if there's a main session (might not have added_by if migrated)
+    main_session = await ether_db.sessions.find_one({"type": "main"})
+    if main_session and not any(btn[0].text.endswith(f"({main_session['user_id']})") for btn in buttons):
+         buttons.append([Button.inline(f"Remove Main: {main_session.get('name')} ({main_session['user_id']})", f"rm_acc:{main_session['user_id']}")])
+
+    if not buttons:
+        await event.reply("<b>No cloned accounts found.</b>", parse_mode="html")
+        return
+
+    await event.reply(
+        "<b>Account Removal</b>\n\nSelect an account to remove from the system:",
+        buttons=buttons,
+        parse_mode="html"
+    )
+
+@bot.on(events.CallbackQuery(pattern=b"rm_acc:(\\d+)"))
+async def cb_remove_account(event):
+    if event.sender_id != Config.OWNER_ID:
+        await event.answer("Access denied.", alert=True)
+        return
+
+    user_id = int(event.pattern_match.group(1).decode())
+    
+    doc = await ether_db.sessions.find_one({"user_id": user_id})
+    if not doc:
+        await event.answer("Account not found in database.", alert=True)
+        return
+
+    name = doc.get("name", "Unknown")
+    
+    # 1. Stop the client
+    global userbot_client, cloned_clients
+    target_client = None
+
+    if user_id in cloned_clients:
+        target_client = cloned_clients.pop(user_id)
+    elif userbot_client:
+        # Check if it's the main client
         try:
-            logger.info("Disconnecting userbot client for session removal")
-            if userbot_client.is_connected():
-                await userbot_client.disconnect()
-            # Give it a moment to release locks
-            await asyncio.sleep(1)
-        except Exception as e:
-            logger.error(f"Error disconnecting userbot client: {e}")
+            me = await userbot_client.get_me()
+            if me and me.id == user_id:
+                target_client = userbot_client
+                userbot_client = None # Reset main client reference
+        except:
+            pass
 
-    session_file = f"{Config.SESSION_NAME}.session"
-    # Also clean up journal and other possible temporary sqlite files
-    to_delete = [
-        session_file,
-        f"{session_file}-journal",
-        f"{session_file}-wal",
-        f"{session_file}-shm"
-    ]
-    
-    deleted = False
-    for filepath in to_delete:
-        if os.path.exists(filepath):
-            try:
-                os.remove(filepath)
-                if filepath == session_file:
-                    deleted = True
-                logger.info(f"Removed session-related file: {filepath}")
-            except Exception as e:
-                logger.error(f"Failed to remove {filepath}: {e}")
-    
-    # Reset the wrapper and client instance AFTER file deletion
-    if userbot_wrapper:
-        userbot_wrapper._client = None
-        userbot_client = userbot_wrapper.get_client()
-        logger.info("Userbot client reset in wrapper after session removal")
+    if target_client:
+        try:
+            await target_client.disconnect()
+        except:
+            pass
 
-    if deleted:
-        await event.reply(
-            "<b>Session Removed</b>\n\n"
-            "Your session has been deleted.\n"
-            "Use /login to create a new session.",
-            parse_mode="html"
-        )
-    else:
-        await event.reply(
-            "<b>No Session Found</b>\n\n"
-            "No session file exists to remove.",
-            parse_mode="html"
-        )
+    # 2. Delete from DB
+    await ether_db.sessions.delete_one({"user_id": user_id})
+
+    await event.edit(f"<b>Account Removed:</b> {name} ({user_id})", parse_mode="html", buttons=None)
+    logger.info(f"Account removed by admin: {name} ({user_id})")
 
 
 def set_userbot_client(client, wrapper=None):
@@ -980,6 +1131,11 @@ def set_plugin_loader(loader):
     global plugin_loader
     plugin_loader = loader
     logger.info("Plugin loader reference set for login")
+
+def add_cloned_client(user_id, client):
+    global cloned_clients
+    cloned_clients[user_id] = client
+    logger.info(f"Cloned client added to registry: {user_id}")
 
 
 # ============================================
