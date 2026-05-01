@@ -19,7 +19,7 @@
 #  Thank you for respecting open-source development.
 # =============================================================================
 
-from pymongo.asynchronous import AsyncMongoClient
+from pymongo import AsyncMongoClient
 from config.config import Config
 from utils.logger import get_logger
 
@@ -62,7 +62,7 @@ class EtherMongo:
     
     async def close(self) -> None:
         if self.client:
-            await self.client.close()
+            self.client.close()
             logger.info("MongoDB connection closed")
     
     # Collection accessors
