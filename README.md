@@ -42,10 +42,36 @@ Unlike traditional userbots that require risky "String Sessions" generated via t
 
 ---
 
-# 🚀🔴 HOW TO DEPLOY ETHER USERBOT (FREE & FAST HOSTING GUIDE)
+# 🚀🔴 DEPLOYMENT GUIDES
 
 <details>
-<summary><b>CLICK HERE TO EXPAND DEPLOYMENT GUIDE</b></summary>
+<summary><b>🚀 DEPLOY TO HEROKU (RECOMMENDED)</b></summary>
+
+---
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://dashboard.heroku.com/new?template=https://github.com/LearningBotsOfficial/Ether)
+
+### ▸ STEP 1: PRE-REQUISITES
+- A Heroku Account.
+- A MongoDB Connection String (from MongoDB Atlas).
+- Telegram API_ID, API_HASH, and BOT_TOKEN.
+
+### ▸ STEP 2: DEPLOY
+1. Click the **"Deploy to Heroku"** button above.
+2. Fill in the required environment variables.
+3. Click **"Deploy App"**.
+
+### ▸ STEP 3: ACTIVATE
+1. Go to the **Resources** tab in Heroku.
+2. Enable the **worker** dyno (turn the switch on).
+3. Open your bot on Telegram and send `/login`.
+
+---
+
+</details>
+
+<details>
+<summary><b>☁️ DEPLOY TO JUSTRUNMY.APP</b></summary>
 
 ---
 
