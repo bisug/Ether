@@ -12,9 +12,9 @@
 #  License:       Open Source (Keep Credits)
 #
 #  IMPORTANT:
-#    • If you copy, fork, or reuse this project or any part of it,
+#    - If you copy, fork, or reuse this project or any part of it,
 #      you MUST retain original credits.
-#    • Proper attribution to Ether project is required.
+#    - Proper attribution to Ether project is required.
 #
 #  Thank you for respecting open-source development.
 # =============================================================================
@@ -82,14 +82,14 @@ def setup(ether, db, owner_id):
         
         if not event.is_reply:
             await event.reply(
-                "⚠️ Reply to the message you want to save as a shortcut.\n\n"
-                "📝 <b>Supported:</b>\n"
-                "• Text with **bold**, __italic__, `code`\n"
-                "• Images (photos)\n"
-                "• Inline buttons (URL or callback)\n\n"
-                "📌 <b>Button Format:</b>\n"
-                "<code>[Button.url('🌐 My Site', 'https://example.com')]</code>\n"
-                "💡 <b>Tip:</b> Include button code in your message text."
+                "Reply to the message you want to save as a shortcut.\n\n"
+                "<b>Supported:</b>\n"
+                "- Text with **bold**, __italic__, `code`\n"
+                "- Images (photos)\n"
+                "- Inline buttons (URL or callback)\n\n"
+                "<b>Button Format:</b>\n"
+                "<code>[Button.url('My Site', 'https://example.com')]</code>\n"
+                "<b>Tip:</b> Include button code in your message text."
             )
             return
         
@@ -173,15 +173,15 @@ def setup(ether, db, owner_id):
                 "buttons": buttons
             }
             
-            response = f"✅ Shortcut '{name}' saved."
+            response = f"Shortcut '{name}' saved."
             if image_path:
-                response += "\n📷 Image included."
+                response += "\nImage included."
             if buttons:
-                response += f"\n🔘 {len(buttons)} button rows included."
+                response += f"\n{len(buttons)} button rows included."
             await event.edit(response)
         except Exception as e:
             logger.error(f"Failed to save shortcut: {e}")
-            await event.edit("❌ Failed to save shortcut.")
+            await event.edit("Failed to save shortcut.")
 
 
 # ============================================
@@ -198,7 +198,7 @@ def setup(ether, db, owner_id):
         shortcut = await shortcut_service.get_shortcut(owner_id, name)
         
         if not shortcut:
-            await event.reply(f"❌ Shortcut '{name}' not found.")
+            await event.reply(f"Shortcut '{name}' not found.")
             return
         
         text = shortcut.get("text", "")
@@ -230,10 +230,10 @@ def setup(ether, db, owner_id):
             reply_msg = await event.get_reply_message()
             target_chat = reply_msg.chat_id
             await send_shortcut_message(text, target_chat)
-            await event.edit(f"✅ Shortcut '{name}' sent.")
+            await event.edit(f"Shortcut '{name}' sent.")
         else:
             await send_shortcut_message(text)
-            await event.edit(f"✅ Shortcut '{name}' sent.")
+            await event.edit(f"Shortcut '{name}' sent.")
 
 
 # ============================================
@@ -253,9 +253,9 @@ def setup(ether, db, owner_id):
             if name.lower() in SHORTCUT_DATA:
                 del SHORTCUT_DATA[name.lower()]
             
-            await event.edit(f"🗑️ Shortcut '{name}' deleted.")
+            await event.edit(f"Shortcut '{name}' deleted.")
         else:
-            await event.edit(f"❌ Shortcut '{name}' not found.")
+            await event.edit(f"Shortcut '{name}' not found.")
 
     
 # ============================================
@@ -270,7 +270,7 @@ def setup(ether, db, owner_id):
         shortcuts = await shortcut_service.list_shortcuts(owner_id)
         
         if not shortcuts:
-            await event.reply("📭 No shortcuts saved yet.\n\nUse .shortcut <name> to save one.")
+            await event.reply("No shortcuts saved yet.\n\nUse .shortcut <name> to save one.")
         else:
-            shortcut_list = "\n".join(f"• <code>{s}</code>" for s in shortcuts)
-            await event.reply(f"📋 <b>Your Shortcuts:</b>\n\n{shortcut_list}\n\n<i>Total: {len(shortcuts)}</i>", parse_mode="html")
+            shortcut_list = "\n".join(f"- <code>{s}</code>" for s in shortcuts)
+            await event.reply(f"<b>Your Shortcuts:</b>\n\n{shortcut_list}\n\n<i>Total: {len(shortcuts)}</i>", parse_mode="html")

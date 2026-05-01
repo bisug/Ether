@@ -1,7 +1,7 @@
 # =============================================================================
 #  Ether Userbot System - Official Channels
 #
-#  ⚠️  WARNING: DO NOT MODIFY THIS FILE ⚠️
+#    WARNING: DO NOT MODIFY THIS FILE
 #
 #  This file contains official channel links and integrity checks.
 #  Any modification to this file will cause the bot to stop working.

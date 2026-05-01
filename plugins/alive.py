@@ -12,9 +12,9 @@
 #  License:       Open Source (Keep Credits)
 #
 #  IMPORTANT:
-#    • If you copy, fork, or reuse this project or any part of it,
+#    - If you copy, fork, or reuse this project or any part of it,
 #      you MUST retain original credits.
-#    • Proper attribution to Ether project is required.
+#    - Proper attribution to Ether project is required.
 #
 #  Thank you for respecting open-source development.
 # =============================================================================
@@ -39,7 +39,7 @@ def setup(ether, db, owner_id):
             return
 
         if not bot_username:
-            await event.reply("❌ BOT_USERNAME not set.")
+            await event.reply("BOT_USERNAME not set.")
             return
 
         try:
@@ -53,8 +53,8 @@ def setup(ether, db, owner_id):
             if results:
                 await results[0].click(event.chat_id)
             else:
-                await event.respond("❌ Inline failed: no result returned.")
+                await event.respond("Inline failed: no result returned.")
 
         except Exception as e:
             logger.error(f"Alive error: {e}")
-            await event.respond("❌ Alive failed.")
+            await event.respond("Alive failed.")

@@ -2,7 +2,7 @@
 
 <img src="https://i.ibb.co/rKM4mfnx/x.jpg" width="60%" />
 
-# ⚡ Ether Userbot System
+#  Ether Userbot System
 **The Next-Gen Modular Telegram Framework**
 
 ![Stars](https://img.shields.io/github/stars/LearningBotsOfficial/Ether)
@@ -19,7 +19,7 @@
 
 </div>
 
-## 🛡️ Why Ether is Safe?
+##  Why Ether is Safe?
 
 **Zero String Session Reliance**
 
@@ -32,36 +32,36 @@ Unlike traditional userbots that require risky "String Sessions" generated via t
 
 ---
 
-## ⭐ Features
+##  Features
 
-* **🛡️ Secure Auth:** Native login system (No String Session required)
-* **⚡ Hybrid Engine:** Leverages Telethon (Userbot) and Bot API simultaneously
-* **🔐 Privacy First:** Full 2FA support and local session management
-* **📦 Plugin Architecture:** Easily drop new `.py` scripts into the `plugins/` folder
-* **👉 There are many more features — visit the plugins folder or deploy to explore all.**
+* ** Secure Auth:** Native login system (No String Session required)
+* ** Hybrid Engine:** Leverages Telethon (Userbot) and Bot API simultaneously
+* ** Privacy First:** Full 2FA support and local session management
+* ** Plugin Architecture:** Easily drop new `.py` scripts into the `plugins/` folder
+* ** There are many more features — visit the plugins folder or deploy to explore all.**
 
 ---
 
-# 🚀🔴 DEPLOYMENT GUIDES
+#  DEPLOYMENT GUIDES
 
 <details>
-<summary><b>🚀 DEPLOY TO HEROKU (RECOMMENDED)</b></summary>
+<summary><b> DEPLOY TO HEROKU (RECOMMENDED)</b></summary>
 
 ---
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://dashboard.heroku.com/new?template=https://github.com/LearningBotsOfficial/Ether)
 
-### ▸ STEP 1: PRE-REQUISITES
+### - STEP 1: PRE-REQUISITES
 - A Heroku Account.
 - A MongoDB Connection String (from MongoDB Atlas).
 - Telegram API_ID, API_HASH, and BOT_TOKEN.
 
-### ▸ STEP 2: DEPLOY
+### - STEP 2: DEPLOY
 1. Click the **"Deploy to Heroku"** button above.
 2. Fill in the required environment variables.
 3. Click **"Deploy App"**.
 
-### ▸ STEP 3: ACTIVATE
+### - STEP 3: ACTIVATE
 1. Go to the **Resources** tab in Heroku.
 2. Enable the **worker** dyno (turn the switch on).
 3. Open your bot on Telegram and send `/login`.
@@ -71,17 +71,17 @@ Unlike traditional userbots that require risky "String Sessions" generated via t
 </details>
 
 <details>
-<summary><b>☁️ DEPLOY TO JUSTRUNMY.APP</b></summary>
+<summary><b> DEPLOY TO JUSTRUNMY.APP</b></summary>
 
 ---
 
-## ▸ ABOUT
+## - ABOUT
 We’ve found a **free + fast hosting platform** for you to easily deploy your userbot.  
 Follow all steps carefully.
 
 ---
 
-## ▸ STEP 1: DOWNLOAD THE PROJECT
+## - STEP 1: DOWNLOAD THE PROJECT
 
 1. First, **fork the repository**  
    Link :- https://github.com/LearningBotsOfficial/Ether  
@@ -91,7 +91,7 @@ Follow all steps carefully.
 
 ---
 
-## ▸ STEP 2: UPLOAD ON HOSTING SITE
+## - STEP 2: UPLOAD ON HOSTING SITE
 
 1. Go to: https://justrunmy.app/  
 2. **Sign up / Login**  
@@ -100,7 +100,7 @@ Follow all steps carefully.
 
 ---
 
-## ▸ STEP 3: FILL REQUIRED DETAILS
+## - STEP 3: FILL REQUIRED DETAILS
 
 You will be asked to enter the following:
 
@@ -123,7 +123,7 @@ DEBUG=False
 
 ---
 
-## ▸ STEP 4: START YOUR BOT
+## - STEP 4: START YOUR BOT
 
 1. Click on **Continue**  
 2. Wait for deployment to complete  
@@ -131,7 +131,7 @@ DEBUG=False
 
 ---
 
-## ▸ STEP 5: LOGIN & ACTIVATE
+## - STEP 5: LOGIN & ACTIVATE
 
 1. Open your bot  
 2. Send: `/start`  
@@ -140,7 +140,7 @@ DEBUG=False
 
 ---
 
-## ▸ DONE
+## - DONE
 
 Your userbot is now running with **100% safety**  
 
@@ -148,7 +148,7 @@ Some steps are shown in the video — watch it for better understanding
 
 ---
 
-## ▸ SUPPORT
+## - SUPPORT
 
 If you face any issues, feel free to ask for help  
 
@@ -158,28 +158,28 @@ If you face any issues, feel free to ask for help
 
 ---
 
-## ⚙️ Configuration (.env)
+##  Configuration (.env)
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| API_ID | Your Telegram API ID | ✅ Yes |
-| API_HASH | Your Telegram API Hash | ✅ Yes |
-| BOT_TOKEN | Token from @BotFather | ✅ Yes |
-| OWNER_ID | Your numeric Telegram ID | ✅ Yes |
-| BOT_USERNAME | Your bot username (without @) | ✅ Yes |
-| MONGO_URI | MongoDB Connection String | ✅ Yes |
-| DB_NAME | Database name (default: Ether) | ❌ No |
-| SESSION_NAME | Session file name (default: etheruserbot) | ❌ No |
-| SESSION_DIR | Session directory (default: sessions) | ❌ No |
-| DEBUG | Enable debug mode (True/False) | ❌ No |
+| API_ID | Your Telegram API ID |  Yes |
+| API_HASH | Your Telegram API Hash |  Yes |
+| BOT_TOKEN | Token from @BotFather |  Yes |
+| OWNER_ID | Your numeric Telegram ID |  Yes |
+| BOT_USERNAME | Your bot username (without @) |  Yes |
+| MONGO_URI | MongoDB Connection String |  Yes |
+| DB_NAME | Database name (default: Ether) |  No |
+| SESSION_NAME | Session file name (default: etheruserbot) |  No |
+| SESSION_DIR | Session directory (default: sessions) |  No |
+| DEBUG | Enable debug mode (True/False) |  No |
 
 ---
 ---
 
-## 📱 Commands
+##  Commands
 
 <details>
-<summary>  Click Here 👈 </summary>
+<summary>  Click Here  </summary>
 
 ### Bot Commands (Prefix: /)
 
@@ -234,7 +234,7 @@ If you face any issues, feel free to ask for help
 </details>
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 Ether/
@@ -268,7 +268,7 @@ Ether/
 
 ---
 
-## 🔧 Deployment
+##  Deployment
 
 ### Local Deployment
 Follow the Quickstart guide above for local deployment.
@@ -304,26 +304,26 @@ python main.py
 
 ---
 
-## 🤝 Community & Support
+##  Community & Support
 
 <p align="center">
   <a href="https://t.me/Ether_Update">
-    <img src="https://img.shields.io/badge/🚀%20Ether%20Userbot-Official%20Channel-5865F2?style=for-the-badge&logo=telegram">
+    <img src="https://img.shields.io/badge/%20Ether%20Userbot-Official%20Channel-5865F2?style=for-the-badge&logo=telegram">
   </a>
   <a href="https://t.me/EtherSupport">
-    <img src="https://img.shields.io/badge/💬%20Ether%20Support-Get%20Help-2ECC71?style=for-the-badge&logo=telegram">
+    <img src="https://img.shields.io/badge/%20Ether%20Support-Get%20Help-2ECC71?style=for-the-badge&logo=telegram">
   </a>
 </p>
 
 <p align="center">
   <a href="https://t.me/LearningBotsNetwork">
-    <img src="https://img.shields.io/badge/📢%20Learning%20Bots-Updates%20%26%20Ecosystem-F39C12?style=for-the-badge&logo=telegram">
+    <img src="https://img.shields.io/badge/%20Learning%20Bots-Updates%20%26%20Ecosystem-F39C12?style=for-the-badge&logo=telegram">
   </a>
 </p>
 
 ---
 
-## ⚠️ License & Terms
+##  License & Terms
 
 Ether is open-source. By using this software, you agree to:
 
@@ -334,7 +334,7 @@ Ether is open-source. By using this software, you agree to:
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -342,8 +342,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by [LearningBotsOfficial](https://github.com/LearningBotsOfficial)**
+**Made with  by [LearningBotsOfficial](https://github.com/LearningBotsOfficial)**
 
-[⬆ Back to Top](#-ether-userbot-system)
+[ Back to Top](#-ether-userbot-system)
 
 </div>

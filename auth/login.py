@@ -12,9 +12,9 @@
 #  License:       Open Source (Keep Credits)
 #
 #  IMPORTANT:
-#    • If you copy, fork, or reuse this project or any part of it,
+#    - If you copy, fork, or reuse this project or any part of it,
 #      you MUST retain original credits.
-#    • Proper attribution to Ether project is required.
+#    - Proper attribution to Ether project is required.
 #
 #  Thank you for respecting open-source development.
 # =============================================================================
@@ -53,15 +53,15 @@ class EtherAuthManager:
             result = await self.client.send_code_request(phone)
             self.phone_code_hash = result.phone_code_hash
 
-            logger.info(f"📩 OTP sent to {phone}")
+            logger.info(f" OTP sent to {phone}")
             return "OTP_SENT"
 
         except FloodWaitError as e:
-            logger.warning(f"⏳ FloodWait: {e.seconds}s")
+            logger.warning(f" FloodWait: {e.seconds}s")
             return f"FLOOD_WAIT_{e.seconds}"
 
         except Exception as e:
-            logger.error(f"❌ OTP Error: {e}")
+            logger.error(f" OTP Error: {e}")
             return "ERROR"
 
     async def verify_otp(self, code: str):
@@ -74,11 +74,11 @@ class EtherAuthManager:
                 phone_code_hash=self.phone_code_hash
             )
 
-            logger.info("✅ Ether login successful")
+            logger.info(" Ether login successful")
             return "SUCCESS"
 
         except SessionPasswordNeededError:
-            logger.info("🔐 2FA required")
+            logger.info(" 2FA required")
             return "2FA_REQUIRED"
 
         except PhoneCodeInvalidError:
@@ -88,7 +88,7 @@ class EtherAuthManager:
             return "CODE_EXPIRED"
 
         except Exception as e:
-            logger.error(f"❌ Verify OTP Error: {e}")
+            logger.error(f" Verify OTP Error: {e}")
             return "ERROR"
 
     async def verify_2fa(self, password: str):
@@ -97,15 +97,15 @@ class EtherAuthManager:
 
             await self.client.sign_in(password=password)
 
-            logger.info("✅ 2FA verification successful")
+            logger.info(" 2FA verification successful")
             return "SUCCESS"
 
         except Exception as e:
-            logger.error(f"❌ 2FA Error: {e}")
+            logger.error(f" 2FA Error: {e}")
             return "ERROR"
 
     async def cancel(self):
-        logger.info("❌ Ether login cancelled")
+        logger.info(" Ether login cancelled")
 
     async def finish(self):
-        logger.info("🔐 Ether login completed")
+        logger.info(" Ether login completed")

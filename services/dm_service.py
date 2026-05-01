@@ -12,9 +12,9 @@
 #  License:       Open Source (Keep Credits)
 #
 #  IMPORTANT:
-#    • If you copy, fork, or reuse this project or any part of it,
+#    - If you copy, fork, or reuse this project or any part of it,
 #      you MUST retain original credits.
-#    • Proper attribution to Ether project is required.
+#    - Proper attribution to Ether project is required.
 #
 #  Thank you for respecting open-source development.
 # =============================================================================

@@ -12,9 +12,9 @@
 #  License:       Open Source (Keep Credits)
 #
 #  IMPORTANT:
-#    • If you copy, fork, or reuse this project or any part of it,
+#    - If you copy, fork, or reuse this project or any part of it,
 #      you MUST retain original credits.
-#    • Proper attribution to Ether project is required.
+#    - Proper attribution to Ether project is required.
 #
 #  Thank you for respecting open-source development.
 # =============================================================================
@@ -45,7 +45,7 @@ def setup(ether, db, owner_id):
         
         if not bot_username:
             await event.reply(
-                "🔥 <b>Ether Help</b>\n\n"
+                "<b>Ether Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
                 "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"
@@ -67,7 +67,7 @@ def setup(ether, db, owner_id):
                 await results[0].click(event.chat_id)
             else:
                 await event.respond(
-                    "🔥 <b>Ether Help</b>\n\n"
+                    "<b>Ether Help</b>\n\n"
                     "<code>.commands</code> - List all commands\n"
                     "<code>.ping</code> - Check latency\n"
                     "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"
@@ -80,7 +80,7 @@ def setup(ether, db, owner_id):
         except Exception as e:
             logger.error(f"Inline help failed: {e}")
             await event.respond(
-                "🔥 <b>Ether Help</b>\n\n"
+                "<b>Ether Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
                 "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"
