@@ -45,8 +45,8 @@ bot = TelegramClient('bot', Config.API_ID, Config.API_HASH)
 
 # Store login state temporarily
 login_state = {}
-userbot_client = None
-userbot_wrapper = None
+userbot_wrapper = EtherUserClient()
+userbot_client = userbot_wrapper.get_client()
 plugin_loader = None
 cloned_clients = {} # {user_id: client}
 
