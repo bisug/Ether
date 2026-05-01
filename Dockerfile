@@ -5,17 +5,24 @@ FROM python:3.12-slim AS builder
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Install build dependencies
+# Install build dependencies and upgrade system packages
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install dependencies
+# Set work directory
 WORKDIR /app
+
+# Create a virtual environment for dependencies
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
+# Upgrade pip and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Runner
 FROM python:3.12-slim
@@ -23,7 +30,8 @@ FROM python:3.12-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PATH="/root/.local/bin:$PATH"
+# Ensure the virtual environment's binaries are in the PATH
+ENV PATH="/app/venv/bin:$PATH"
 
 # Install runtime dependencies and upgrade system packages
 RUN apt-get update && \
@@ -34,8 +42,8 @@ RUN apt-get update && \
 # Set work directory
 WORKDIR /app
 
-# Copy installed python packages from builder
-COPY --from=builder /root/.local /root/.local
+# Copy the virtual environment from the builder
+COPY --from=builder /app/venv /app/venv
 
 # Copy application code
 COPY . .
