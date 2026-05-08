@@ -42,181 +42,276 @@ Unlike traditional userbots that require risky "String Sessions" generated via t
 
 ---
 
-## 🚀 Quickstart
-
-### Prerequisites
-- **Python 3.9 or higher** (Tested on Python 3.12)
-- MongoDB Instance (optional, but recommended)
-- Telegram `API_ID` & `API_HASH` (Get them at [my.telegram.org](https://my.telegram.org))
-- Bot Token from [@BotFather](https://t.me/BotFather)
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/LearningBotsOfficial/Ether.git
-cd Ether
-
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate  # On Windows
-source venv/bin/activate  # On Linux/Mac
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure environment
-# Copy .env.example to .env and fill in your credentials
-# Or create .env manually with required variables
-
-# Launch
-python main.py
-```
-
 ---
+<br>
 
-## ⚙️ Configuration (.env)
+<div align="center">
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| API_ID | Your Telegram API ID | ✅ Yes |
-| API_HASH | Your Telegram API Hash | ✅ Yes |
-| BOT_TOKEN | Token from @BotFather | ✅ Yes |
-| OWNER_ID | Your numeric Telegram ID | ✅ Yes |
-| BOT_USERNAME | Your bot username (without @) | ✅ Yes |
-| MONGO_URI | MongoDB Connection String | ✅ Yes |
-| DB_NAME | Database name (default: Ether) | ❌ No |
-| SESSION_NAME | Session file name (default: etheruserbot) | ❌ No |
-| SESSION_DIR | Session directory (default: sessions) | ❌ No |
-| DEBUG | Enable debug mode (True/False) | ❌ No |
+<a href="https://render.com/deploy">
+  <img src="https://render.com/images/deploy-to-render-button.svg" width="170">
+</a>
 
----
----
+<br>
 
-## 📱 Commands
+
+</div>
 
 <details>
-<summary>  Click Here 👈 </summary>
 
-### Bot Commands (Prefix: /)
+<summary align="center">
 
-| Command | Description | Access |
-|---------|-------------|--------|
-| `/start` | Initialize the bot and view welcome message | All Users |
-| `/login` | Securely authenticate your account via OTP/2FA | Admin Only |
-| `/cancel` | Cancel ongoing login process | Admin Only |
-| `/remove` | Delete current session file | Admin Only |
+  ` 🚀 Render Deployment Guide`
 
-### Userbot Commands (Prefix: .)
+</summary>
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `.ping` | Measure response latency | `.ping` |
-| `.alive` | View system status and uptime | `.alive` |
-| `.help` | Display help menu and available commands | `.help` |
-| `.tagall` | Mention all members in a group | `.tagall` |
-| `.fonts <text>` | Convert text to multiple font styles | `.fonts Hello` |
+---
 
-### Shortcut Commands
+### 1️⃣ Collect Required Details
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `.shortcut <name>` | Save a message as shortcut (reply to message) | `.shortcut my` |
-| `.get <name>` | Retrieve and send a shortcut | `.get my` |
-| `.delshortcut <name>` | Delete a saved shortcut | `.delshortcut my` |
-| `.shortcuts` | List all saved shortcuts | `.shortcuts` |
+| Variable | Description |
+|---|---|
+| API_ID | Telegram API ID |
+| API_HASH | Telegram API Hash |
+| BOT_TOKEN | BotFather Bot Token |
+| OWNER_ID | Your Telegram Numeric ID |
+| MONGO_URI | MongoDB Connection URI |
 
-### DM Protection Commands
+### Required Links
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `.allow` | Allow a user to DM you (reply to their message) | `.allow` |
-| `.disallow` | Remove a user from allowed list | `.disallow` |
-| `.setwelcome` | Set custom welcome message for DMs | `.setwelcome` |
-| `.clearwelcome` | Clear custom welcome message | `.clearwelcome` |
-| `.setwarn <n>` | Set max warnings before auto-block | `.setwarn 3` |
+- https://my.telegram.org
+- https://t.me/BotFather
+- https://mongodb.com
 
-### DM Shield Commands
+---
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `.shield` | Display shield help menu | `.shield` |
-| `.shield on` | Enable DM protection | `.shield on` |
-| `.shield off` | Disable DM protection | `.shield off` |
-| `.shield status` | Show current shield status | `.shield status` |
-| `.shield link` | Toggle link filter | `.shield link` |
-| `.shield user` | Toggle username filter | `.shield user` |
-| `.shield allow` | Whitelist a user | `.shield allow` |
-| `.shield disallow` | Remove user from whitelist | `.shield disallow` |
+### 2️⃣ Fork Repository
+
+- ⭐ Star the repository
+- 🍴 Fork Ether to your GitHub account
+
+---
+
+### 3️⃣ Deploy to Render
+
+Click the **Deploy to Render** button.
+
+Then:
+
+- Login to Render
+- Connect GitHub
+- Select your forked Ether repository
+
+---
+
+### 4️⃣ Configure Render
+
+#### Recommended Plan
+
+- Free Plan
+
+---
+
+### Fill in Start Command
+
+```bash
+python render.py
+```
+
+---
+
+## Add Environment Variables
+
+| Key | Value |
+|---|---|
+| API_ID | Your Telegram API ID |
+| API_HASH | Your Telegram API Hash |
+| BOT_TOKEN | Your Bot Token |
+| OWNER_ID | Your Telegram User ID |
+| MONGO_URI | MongoDB URI |
+
+---
+
+After adding all variables:
+
+✅ Click **Create Web Service**
+
+⏳ Deployment usually takes around **1–2 minutes**
+
+---
+
+### 5️⃣ Final Telegram Setup
+
+Open **@BotFather**
+
+- Send `/mybots`
+- Select your bot
+- Open **Bot Settings**
+- Enable **Inline Mode**
+
+---
+
+Then open your deployed bot and run:
+
+```bash
+/login
+```
+
+Complete the login process:
+
+- Phone Number Verification
+- OTP Verification
+- 2FA Password (if enabled)
+
+---
+
+## ✅ Deployment Complete
+
+Use:
+
+```bash
+.help
+```
+
+to see all available commands.
+
+
+
 </details>
----
-
-## 📂 Project Structure
-
-```
-Ether/
-├── assets/          # Static assets (logos, images)
-├── auth/            # Authentication utilities
-├── config/          # Configuration management
-├── core/            # Core client and bot logic
-│   ├── bot.py       # Bot API handlers and inline queries
-│   ├── loader.py    # Plugin loader
-│   └── user_client.py # Telethon client wrapper
-├── database/        # Database schemas
-├── logs/            # Log files
-├── media/           # User-uploaded media (shortcuts, welcome)
-├── plugins/         # Userbot command plugins
-│   ├── alive.py
-│   ├── dm.py
-│   ├── dm_shield.py
-│   ├── fonts.py
-│   ├── help.py
-│   ├── ping.py
-│   ├── shortcut.py
-│   └── tagall.py
-├── services/        # Business logic services
-├── sessions/        # Telegram session files
-├── storage/         # Database connection (MongoDB)
-├── utils/           # Helper utilities
-├── .env             # Environment variables
-├── main.py          # Entry point
-└── requirements.txt # Python dependencies
-```
 
 ---
 
-## 🔧 Deployment
+<br>
 
-### Local Deployment
-Follow the Quickstart guide above for local deployment.
+<div align="center">
 
-### VPS Deployment (Ubuntu/Debian)
+<a href="https://justrunmy.app/">
+  <img src="https://img.shields.io/badge/Deploy%20Now-JustRunMyApp-5865F2?style=for-the-badge">
+</a>
+
+</div>
+
+<br>
+
+<details>
+
+<summary align="center">
+
+`🚀 JustRunMyApp Deployment Guide`
+
+</summary>
+
+---
+
+# 1️⃣ Collect Required Details
+
+| Variable | Description |
+|---|---|
+| API_ID | Telegram API ID |
+| API_HASH | Telegram API Hash |
+| BOT_TOKEN | BotFather Bot Token |
+| OWNER_ID | Your Telegram Numeric ID |
+| MONGO_URI | MongoDB Connection URI |
+
+---
+
+# 2️⃣ Fork & Download Repository
+
+- ⭐ Star Ether
+- 🍴 Fork the repository
+- 📦 Download repository ZIP
+
+---
+
+# 3️⃣ Upload ZIP File
+
+- Login to JustRunMyApp
+- Upload the ZIP file
+- Wait for processing
+- Fill all required environment variables
+
+⏳ Deployment usually takes around **1–2 minutes**
+
+---
+
+# 4️⃣ Final Telegram Setup
+
+Open **@BotFather**
+
+- Send `/mybots`
+- Select your bot
+- Open **Bot Settings**
+- Enable **Inline Mode**
+
+---
+
+Then open your deployed bot and run:
+
+```bash
+/login
+```
+
+Complete:
+
+- Phone Number Verification
+- OTP Verification
+- 2FA Password (if enabled)
+
+---
+
+# ✅ Deployment Complete
+
+Use:
+
+```bash
+.help
+```
+
+to see all available commands.
+
+---
+
+</details>
+
+---
+
+# ☁️ Deploy on VPS
 
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Python 3.9+ or higher (Tested on Python 3.12)
-sudo apt install python3.9 python3-pip python3-venv -y
+# Install dependencies
+sudo apt install python3 python3-pip python3-venv git screen -y
 
 # Clone repository
 git clone https://github.com/LearningBotsOfficial/Ether.git
+
+# Open project folder
 cd Ether
 
-# Create and activate virtual environment 
-python3.9 -m venv venv  # or higher (Tested on Python 3.12)
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
 source venv/bin/activate
 
-# Install dependencies
+# Upgrade pip
+pip install --upgrade pip
+
+# Install requirements
 pip install -r requirements.txt
 
-# Configure .env file
+# Create environment file
 nano .env
 
-# Run with screen/tmux for persistent sessions
+# Start screen session
 screen -S ether
+
+# Start Ether
 python main.py
-# Press Ctrl+A then D to detach
+
+# Detach screen session:
+# CTRL + A then D
 ```
 
 ---
