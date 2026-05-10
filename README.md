@@ -47,7 +47,7 @@ Unlike traditional userbots that require risky "String Sessions" generated via t
 
 <div align="center">
 
-<a href="https://render.com/deploy">
+<a href="https://dashboard.render.com/">
   <img src="https://render.com/images/deploy-to-render-button.svg" width="170">
 </a>
 
