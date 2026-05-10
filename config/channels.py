@@ -19,7 +19,7 @@ import base64
 _CHANNELS = {
     "learning_bots": "https://t.me/learning_bots",
     "ether_update": "https://t.me/Ether_Update",
-    "learning_bots_support": "https://t.me/LearningBotsSupport",
+    "learning_bots_support": "https://t.me/LearningBotsCommunity",
     "ether_support": "https://t.me/EtherSupport"
 }
 
