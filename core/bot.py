@@ -42,6 +42,21 @@ logger = get_logger("EtherBot")
 
 bot = TelegramClient('bot', Config.API_ID, Config.API_HASH)
 bot.parse_mode = 'html'
+ 
+def owner_only(func):
+    async def wrapper(event):
+        if event.sender_id != Config.OWNER_ID:
+            if isinstance(event, events.CallbackQuery.Event):
+                await event.answer("❌ This feature is for the owner only. Host your own bot to use it!", alert=True)
+            elif isinstance(event, events.InlineQuery.Event):
+                await event.answer([], switch_pm="❌ Access Denied", switch_pm_param="unauthorized")
+            elif event.is_private:
+                # We'll handle public /start separately, so this is for other private msgs
+                if not event.text.startswith(("/start", "/id")):
+                    await event.reply("<blockquote>❌ <b>Access Denied</b>\n\nThis is a private instance of Ether Userbot. Please host your own to access full features.</blockquote>", buttons=[Button.url("📁 Get Source", "https://github.com/LearningBotsOfficial/Ether")])
+            return
+        return await func(event)
+    return wrapper
 
 # Store login state temporarily
 login_state = {}
@@ -90,6 +105,7 @@ HELP_DATA["buttons"] = main_buttons
 # ============================================
 
 @bot.on(events.InlineQuery)
+@owner_only
 async def inline_help(event):
     builder = event.builder
     
@@ -312,6 +328,7 @@ async def inline_help(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_back"))
+@owner_only
 async def cb_back(event):
     await event.edit(
         "<blockquote>🔥 <b>Ether Userbot Help</b>\n\nSelect a feature below:</blockquote>",
@@ -321,6 +338,7 @@ async def cb_back(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_dm"))
+@owner_only
 async def cb_dm(event):
     await event.edit(
         "<blockquote>"
@@ -350,6 +368,7 @@ async def cb_dm(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_shortcut"))
+@owner_only
 async def cb_shortcut(event):
     await event.edit(
         "<blockquote>"
@@ -379,6 +398,7 @@ async def cb_shortcut(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_tagall"))
+@owner_only
 async def cb_tagall(event):
     await event.edit(
         "<blockquote>"
@@ -403,6 +423,7 @@ async def cb_tagall(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_ping"))
+@owner_only
 async def cb_ping(event):
     await event.edit(
         "<blockquote>"
@@ -420,14 +441,17 @@ async def cb_ping(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_system"))
+@owner_only
 async def cb_system(event):
     await event.edit(
         "<blockquote>"
-        "📊 <b>System Information</b>\n\n"
-        "Ether Userbot v2.0\n"
-        "• Telethon\n"
-        "• MongoDB\n"
-        "• Plugins"
+        "📊 <b>System Management</b>\n\n"
+        "• <code>.ping</code> - Check latency\n"
+        "• <code>.alive</code> - Check system status\n"
+        "• <code>.restart</code> - Reboot Ether\n"
+        "• <code>.afk</code> - Go away silently\n"
+        "• <code>.status</code> - Check away duration\n"
+        "• <code>.id</code> - Get chat/user IDs"
         "</blockquote>",
         buttons=[[Button.inline("🔙 Back", b"help_back")]]
     )
@@ -436,18 +460,21 @@ async def cb_system(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_privacy"))
+@owner_only
 async def cb_privacy(event):
     await event.edit(
         "<blockquote>"
-        "👁️ <b>Privacy & Message Logs</b>\n\n"
-        "<b>Message Sniffer:</b>\n"
-        "The bot automatically tracks edited and deleted messages in your DMs and sends reports to your Saved Messages.\n\n"
+        "🛡️ <b>Privacy & Protection</b>\n\n"
+        "<b>Anti-Flood:</b>\n"
+        "Automatically blocks users who spam your DMs.\n"
+        "• <code>.antiflood on</code> - Enable protection\n"
+        "• <code>.antiflood off</code> - Disable protection\n\n"
         "<b>Auto-Read:</b>\n"
         "Marks all incoming DMs as read immediately.\n"
-        "• <code>.autoread on</code> - Enable\n"
-        "• <code>.autoread off</code> - Disable\n\n"
-        "<b>Command Help:</b>\n"
-        "<code>.commands</code> - See all system commands."
+        "• <code>.autoread on</code> - Enable blue ticks\n"
+        "• <code>.autoread off</code> - Disable blue ticks\n\n"
+        "<b>Self-Destruct:</b>\n"
+        "• <code>.sd &lt;secs&gt; &lt;text&gt;</code> - Send vanishing text"
         "</blockquote>",
         buttons=[[Button.inline("🔙 Back", b"help_back")]]
     )
@@ -455,6 +482,7 @@ async def cb_privacy(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_fonts"))
+@owner_only
 async def cb_fonts(event):
     await event.edit(
         "<blockquote>"
@@ -488,6 +516,7 @@ async def cb_fonts(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(pattern=b"font_.*"))
+@owner_only
 async def font_callbacks(event):
 
     data = event.data.decode()
@@ -525,6 +554,7 @@ async def font_callbacks(event):
 # ============================================
 
 @bot.on(events.CallbackQuery(data=b"help_shield"))
+@owner_only
 async def cb_shield(event):
 
     await event.edit(
@@ -585,6 +615,17 @@ bot_dm_buttons = [
 
 @bot.on(events.NewMessage(pattern=r"^/start$", incoming=True, func=lambda e: e.is_private))
 async def bot_start_handler(event):
+    if event.sender_id != Config.OWNER_ID:
+        await event.reply(
+            "<blockquote>🔥 <b>Welcome to Ether Userbot</b>\n\n"
+            "This is a private instance of Ether. If you want your own powerful userbot, click the button below to get the source code and host it yourself!</blockquote>",
+            buttons=[
+                [Button.url("📁 Get Source", "https://github.com/LearningBotsOfficial/Ether")],
+                [Button.url("📢 Updates", "https://t.me/Ether_Update"), Button.url("💬 Support", "https://t.me/Ether_Support")]
+            ]
+        )
+        return
+
     try:
         await bot.send_file(
             event.chat_id,
@@ -611,7 +652,16 @@ async def bot_start_handler(event):
 # Bot Login Handler
 # ============================================
 
+@bot.on(events.NewMessage(pattern=r"^/id$", incoming=True))
+async def bot_id_handler(event):
+    await event.reply(f"<blockquote>🆔 <b>Your ID:</b> <code>{event.sender_id}</code>\n💬 <b>Chat ID:</b> <code>{event.chat_id}</code></blockquote>")
+
+# ============================================
+# Administrative Commands (Owner Only)
+# ============================================
+
 @bot.on(events.NewMessage(pattern=r"^/login$", incoming=True, func=lambda e: e.is_private))
+@owner_only
 async def bot_login_handler(event):
     if event.sender_id != Config.OWNER_ID:
         await event.reply("<blockquote>❌ This command is only for the admin.</blockquote>")
@@ -639,6 +689,7 @@ async def bot_login_handler(event):
 # ============================================
 
 @bot.on(events.NewMessage(pattern=r"^/cancel$", incoming=True, func=lambda e: e.is_private))
+@owner_only
 async def bot_cancel_handler(event):
     if event.sender_id != Config.OWNER_ID:
         return
@@ -653,6 +704,7 @@ async def bot_cancel_handler(event):
 # ============================================
 
 @bot.on(events.NewMessage(pattern=r"^/restart$", incoming=True, func=lambda e: e.is_private))
+@owner_only
 async def bot_restart_handler(event):
     if event.sender_id != Config.OWNER_ID:
         return
@@ -673,6 +725,7 @@ async def bot_restart_handler(event):
 # ============================================
 
 @bot.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
+@owner_only
 async def bot_login_flow_handler(event):
     global userbot_client, userbot_wrapper
     
