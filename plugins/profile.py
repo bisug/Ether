@@ -45,7 +45,7 @@ def setup(ether, db, owner_id):
             await event.edit("<blockquote>The replied message must be a photo.</blockquote>")
             return
 
-        await event.edit("<blockquote>⏳ <b>Updating Profile Picture...</b></blockquote>")
+        await event.edit("<blockquote><b>Updating Profile Picture...</b></blockquote>")
 
         try:
             photo = await reply.download_media()
@@ -72,14 +72,14 @@ def setup(ether, db, owner_id):
             await event.edit("<blockquote>Bio text is too long (max 70 characters).</blockquote>")
             return
 
-        await event.edit("<blockquote>⏳ <b>Updating Bio...</b></blockquote>")
+        await event.edit("<blockquote><b>Updating Bio...</b></blockquote>")
 
         try:
             await ether(functions.account.UpdateProfileRequest(about=bio))
             await event.edit(f"<blockquote><b>Bio updated to:</b>\n<i>{bio}</i></blockquote>")
         except Exception as e:
             logger.error(f"Bio update error: {e}")
-            await event.edit(f"<blockquote>❌ Error updating bio: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote>Error updating bio: {str(e)}</blockquote>")
 
 # ============================================
 # .setname Command
@@ -94,7 +94,7 @@ def setup(ether, db, owner_id):
         first_name = names[0]
         last_name = names[1] if len(names) > 1 else ""
 
-        await event.edit("<blockquote>⏳ <b>Updating Name...</b></blockquote>")
+        await event.edit("<blockquote><b>Updating Name...</b></blockquote>")
 
         try:
             await ether(functions.account.UpdateProfileRequest(
@@ -105,6 +105,6 @@ def setup(ether, db, owner_id):
             await event.edit(f"<blockquote><b>Name updated to:</b> <code>{full_name}</code></blockquote>")
         except Exception as e:
             logger.error(f"Name update error: {e}")
-            await event.edit(f"<blockquote>❌ Error updating name: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote>Error updating name: {str(e)}</blockquote>")
 
     logger.info("Profile Management plugin loaded")

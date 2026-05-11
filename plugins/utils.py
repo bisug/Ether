@@ -42,7 +42,7 @@ def setup(ether, db, owner_id):
         content = event.pattern_match.group(2)
 
         if seconds < 1 or seconds > 3600:
-            await event.edit("<blockquote>❌ Time must be between 1 and 3600 seconds.</blockquote>")
+            await event.edit("<blockquote><b>Validation Error:</b> Time must be between 1 and 3600 seconds.</blockquote>")
             return
 
         await event.edit(f"{content}\n\n<i>This message will self-destruct in {seconds} seconds...</i>")
@@ -70,10 +70,10 @@ def setup(ether, db, owner_id):
             text = reply.text
         
         if not text:
-            await event.edit("<blockquote>❌ Provide text or reply to a message to translate.</blockquote>")
+            await event.edit("<blockquote><b>Command Error:</b> Provide text or reply to a message to translate.</blockquote>")
             return
 
-        await event.edit("<blockquote>⏳ <b>Translating...</b></blockquote>")
+        await event.edit("<blockquote><b>Translating...</b></blockquote>")
 
         try:
             # Using a public translation API (MyMemory)
@@ -90,6 +90,6 @@ def setup(ether, db, owner_id):
             )
         except Exception as e:
             logger.error(f"Translation error: {e}")
-            await event.edit(f"<blockquote>❌ Translation failed: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote><b>System Error:</b> Translation failed: {str(e)}</blockquote>")
 
     logger.info("Utility plugin loaded (.sd, .tr)")

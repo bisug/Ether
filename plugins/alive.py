@@ -45,7 +45,7 @@ def setup(ether, db, owner_id):
 
         bot_username = Config.BOT_USERNAME
         if not bot_username:
-            await event.reply("❌ BOT_USERNAME not fetched yet. Please wait.")
+            await event.reply("<blockquote><b>Identity Error:</b> BOT_USERNAME not fetched yet. Please wait.</blockquote>")
             return
 
         try:
@@ -72,26 +72,27 @@ def setup(ether, db, owner_id):
             else:
                 # Fallback if inline query results are empty
                 await event.respond(
-                    f"⚡ <b>Ether Userbot is Alive</b>\n\n"
-                    f"🤖 <b>Bot:</b> {bot_info}\n"
-                    f"🟢 <b>Status:</b> ONLINE\n"
-                    f"⏳ <b>Uptime:</b> {uptime}\n"
-                    f"🖥️ <b>CPU:</b> {cpu}%\n"
-                    f"📊 <b>RAM:</b> {ram}%\n"
-                    f"💾 <b>Disk:</b> {disk}%",
-                    
+                    "<blockquote>"
+                    "<b>Ether System Status</b>\n\n"
+                    f"<b>Bot:</b> {bot_info}\n"
+                    "<b>Status:</b> ONLINE\n"
+                    f"<b>Uptime:</b> {uptime}\n"
+                    f"<b>CPU:</b> {cpu}%\n"
+                    f"<b>RAM:</b> {ram}%\n"
+                    f"<b>Disk:</b> {disk}%"
+                    "</blockquote>",
                 )
 
         except Exception as e:
             logger.error(f"Alive error: {e}")
-            await event.respond("❌ Alive failed.")
+            await event.respond("<blockquote><b>Error:</b> Alive signal failed.</blockquote>")
 
     @ether.on(events.NewMessage(pattern=r"^\.restart$", outgoing=True))
     async def restart_handler(event):
         if event.sender_id != owner_id:
             return
             
-        await event.edit("<blockquote>🔄 <b>Restarting Ether...</b>\n<i>Please wait a few seconds.</i></blockquote>")
+        await event.edit("<blockquote><b>Restarting Ether...</b>\n<i>System reboot in progress.</i></blockquote>")
         
         # Give it a moment to send the message
         await asyncio.sleep(2)

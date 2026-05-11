@@ -79,23 +79,22 @@ def setup(ether, db, owner_id):
         if not event.is_reply:
             await event.reply(
                 "<blockquote>"
-                "⚠️ Reply to the message you want to save as a shortcut.\n\n"
-                "📝 <b>Supported Formatting:</b>\n"
+                "<b>Command Error:</b> Reply to the message you want to save as a shortcut.\n\n"
+                "<b>Supported Formatting:</b>\n"
                 "• <b>Bold:</b> Use <code>**text**</code> or <code>__text__</code>\n"
                 "• <i>Italic:</i> Use <code>__text__</code>\n"
                 "• <code>Code:</code> Use <code>`text`</code>\n\n"
-                "📎 <b>Supported Media:</b>\n"
+                "<b>Supported Media:</b>\n"
                 "• Images (photos)\n"
                 "• Audio files\n"
                 "• Videos\n"
                 "• Documents/Files (ZIP, PDF, etc.)\n"
                 "• Voice notes\n"
                 "• Stickers\n\n"
-                "📌 <b>Button Format:</b>\n"
+                "<b>Button Format:</b>\n"
                 "<code>[Button.url('Button Text', 'https://example.com')]</code>\n"
-                "💡 <b>Tip:</b> Include button code in your message text."
+                "<i>Tip:</i> Include button code in your message text."
                 "</blockquote>",
-                
             )
             return
         
@@ -216,17 +215,18 @@ def setup(ether, db, owner_id):
                 "buttons": buttons
             }
             
-            response = f"✅ Shortcut '{name}' saved."
+            response = f"<blockquote><b>Shortcut Saved:</b> '{name}'"
             if image_path:
-                response += "\n📷 Image included."
+                response += "\n• Image included."
             if file_path:
-                response += f"\n📎 {media_type or 'File'} included."
+                response += f"\n• {media_type.capitalize() or 'File'} included."
             if buttons:
-                response += f"\n🔘 {len(buttons)} button rows included."
+                response += f"\n• {len(buttons)} button rows included."
+            response += "</blockquote>"
             await event.edit(response)
         except Exception as e:
             logger.error(f"Failed to save shortcut: {e}")
-            await event.edit("❌ Failed to save shortcut.")
+            await event.edit("<blockquote><b>System Error:</b> Failed to save shortcut.</blockquote>")
 
 
 # ============================================
@@ -243,7 +243,7 @@ def setup(ether, db, owner_id):
         shortcut = await shortcut_service.get_shortcut(owner_id, name)
         
         if not shortcut:
-            await event.reply(f"<blockquote>❌ Shortcut '{name}' not found.</blockquote>")
+            await event.reply(f"<blockquote><b>Identity Error:</b> Shortcut '{name}' not found.</blockquote>")
             return
         
         text = shortcut.get("text", "")
@@ -293,10 +293,10 @@ def setup(ether, db, owner_id):
             reply_msg = await event.get_reply_message()
             target_chat = reply_msg.chat_id
             await send_shortcut_message(text, target_chat)
-            await event.edit(f"✅ Shortcut '{name}' sent.")
+            await event.edit(f"<blockquote><b>Action Success:</b> Shortcut '{name}' sent.</blockquote>")
         else:
             await send_shortcut_message(text)
-            await event.edit(f"✅ Shortcut '{name}' sent.")
+            await event.edit(f"<blockquote><b>Action Success:</b> Shortcut '{name}' sent.</blockquote>")
 
 
 # ============================================
@@ -316,9 +316,9 @@ def setup(ether, db, owner_id):
             if name.lower() in SHORTCUT_DATA:
                 del SHORTCUT_DATA[name.lower()]
             
-            await event.edit(f"🗑️ Shortcut '{name}' deleted.")
+            await event.edit(f"<blockquote><b>Action Success:</b> Shortcut '{name}' deleted.</blockquote>")
         else:
-            await event.edit(f"❌ Shortcut '{name}' not found.")
+            await event.edit(f"<blockquote><b>Identity Error:</b> Shortcut '{name}' not found.</blockquote>")
 
     
 # ============================================
@@ -333,7 +333,7 @@ def setup(ether, db, owner_id):
         shortcuts = await shortcut_service.list_shortcuts(owner_id)
         
         if not shortcuts:
-            await event.reply("<blockquote>📭 No shortcuts saved yet.\n\nUse .shortcut <name> to save one.</blockquote>")
+            await event.reply("<blockquote><b>Identity Status:</b> No shortcuts saved yet.\n\nUse <code>.shortcut &lt;name&gt;</code> to save one.</blockquote>")
         else:
             shortcut_list = "\n".join(f"• <code>{s}</code>" for s in shortcuts)
-            await event.reply(f"<blockquote>📋 <b>Your Shortcuts:</b>\n\n{shortcut_list}\n\n<i>Total: {len(shortcuts)}</i></blockquote>")
+            await event.reply(f"<blockquote><b>Your Shortcuts:</b>\n\n{shortcut_list}\n\n<i>Total: {len(shortcuts)}</i></blockquote>")

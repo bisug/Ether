@@ -45,7 +45,7 @@ def setup(ether, db, owner_id):
             return
         
         if not event.is_group:
-            await event.edit("<blockquote>❌ This command works only in groups.</blockquote>")
+            await event.edit("<blockquote><b>Command Error:</b> This command works only in groups.</blockquote>")
             return
 
         arg = event.pattern_match.group(1)
@@ -54,22 +54,22 @@ def setup(ether, db, owner_id):
         if arg and arg.lower() == "stop":
             if event.chat_id in ACTIVE_TASKS:
                 ACTIVE_TASKS[event.chat_id] = False
-                await event.edit("<blockquote>🛑 <b>Stopping TagAll...</b></blockquote>")
+                await event.edit("<blockquote><b>Action Success:</b> Stopping TagAll...</blockquote>")
             else:
-                await event.edit("<blockquote>❌ No active TagAll in this chat.</blockquote>")
+                await event.edit("<blockquote><b>Command Error:</b> No active TagAll in this chat.</blockquote>")
             return
 
         # Start TagAll
         message = arg or "Hey everyone!"
         
         if event.chat_id in ACTIVE_TASKS and ACTIVE_TASKS[event.chat_id]:
-            await event.edit("<blockquote>⚠️ A TagAll is already running in this chat.</blockquote>")
+            await event.edit("<blockquote><b>Process Error:</b> A TagAll is already running in this chat.</blockquote>")
             return
 
         await event.delete()
         status_msg = await ether.send_message(
             event.chat_id, 
-            "<blockquote>🚀 <b>Starting TagAll...</b>\n<i>Use <code>.tagall stop</code> to cancel.</i></blockquote>"
+            "<blockquote><b>Starting TagAll...</b>\n<i>Use <code>.tagall stop</code> to cancel.</i></blockquote>"
         )
         
         ACTIVE_TASKS[event.chat_id] = True
@@ -82,7 +82,7 @@ def setup(ether, db, owner_id):
                 users.append(user)
             
             if not users:
-                await status_msg.edit("<blockquote>❌ No eligible users found.</blockquote>")
+                await status_msg.edit("<blockquote><b>Process Error:</b> No eligible users found.</blockquote>")
                 return
 
             users = users[:MAX_USERS]
@@ -100,7 +100,7 @@ def setup(ether, db, owner_id):
                     name = user.first_name or "User"
                     mentions.append(f"[{name}](tg://user?id={user.id})")
                 
-                tag_text = f"📢 {message}\n\n" + " ".join(mentions)
+                tag_text = f"<b>Broadcast:</b> {message}\n\n" + " ".join(mentions)
                 
                 try:
                     await ether.send_message(event.chat_id, tag_text)
@@ -113,9 +113,9 @@ def setup(ether, db, owner_id):
                 
                 await asyncio.sleep(DELAY)
             
-            result_text = f"<blockquote>✅ <b>TagAll Completed</b>\nTagged: {sent} users</blockquote>"
+            result_text = f"<blockquote><b>TagAll Completed</b>\nTagged: {sent} users</blockquote>"
             if not ACTIVE_TASKS.get(event.chat_id):
-                result_text = f"<blockquote>🛑 <b>TagAll Stopped</b>\nTagged: {sent} users</blockquote>"
+                result_text = f"<blockquote><b>TagAll Stopped</b>\nTagged: {sent} users</blockquote>"
             
             await ether.send_message(event.chat_id, result_text)
             

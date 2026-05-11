@@ -63,7 +63,7 @@ def setup(ether, db, owner_id):
                 text += f"<b>Target ID:</b> <code>{entity.id}</code>\n"
                 text += f"<b>Type:</b> {type(entity).__name__}\n"
             except Exception as e:
-                text += f"❌ <b>Error:</b> {str(e)}\n"
+                text += f"<b>Error:</b> {str(e)}\n"
         
         # 4. Self Info (if no reply/target)
         else:
@@ -99,7 +99,7 @@ def setup(ether, db, owner_id):
             if isinstance(entity, types.User):
                 full = await ether(functions.users.GetFullUserRequest(id=entity.id))
                 details = {
-                    "Type": "User 👤",
+                    "Type": "User",
                     "Name": f"{entity.first_name} {entity.last_name or ''}",
                     "ID": entity.id,
                     "Username": f"@{entity.username}" if entity.username else "None",
@@ -113,7 +113,7 @@ def setup(ether, db, owner_id):
             elif isinstance(entity, types.Channel):
                 full = await ether(functions.channels.GetFullChannelRequest(channel=entity))
                 details = {
-                    "Type": "Channel 📢" if entity.broadcast else "Megagroup 👥",
+                    "Type": "Channel" if entity.broadcast else "Megagroup",
                     "Title": entity.title,
                     "ID": entity.id,
                     "Username": f"@{entity.username}" if entity.username else "None",
@@ -127,7 +127,6 @@ def setup(ether, db, owner_id):
             elif isinstance(entity, types.Chat):
                 full = await ether(functions.messages.GetFullChatRequest(chat_id=entity.id))
                 details = {
-                    "Type": "Group (Basic) 👥",
                     "Type": "Group (Basic)",
                     "Title": entity.title,
                     "ID": entity.id,
@@ -161,6 +160,6 @@ def setup(ether, db, owner_id):
 
         except Exception as e:
             logger.error(f"Info error: {e}")
-            await event.edit(f"<blockquote>❌ Failed to fetch info: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote>Failed to fetch info: {str(e)}</blockquote>")
 
     logger.info("Enhanced Info plugin loaded")

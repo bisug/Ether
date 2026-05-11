@@ -54,10 +54,10 @@ def setup(ether, db, owner_id):
             
             if old_text != new_text:
                 log_msg = (
-                    "📝 <b>Message Edited</b>\n"
-                    f"👤 <b>User:</b> <a href='tg://user?id={event.sender_id}'>{event.sender_id}</a>\n\n"
-                    f"❌ <b>Before:</b>\n<code>{old_text}</code>\n\n"
-                    f"✅ <b>After:</b>\n<code>{new_text}</code>"
+                    "<b>Message Edited</b>\n"
+                    f"<b>User:</b> <a href='tg://user?id={event.sender_id}'>{event.sender_id}</a>\n\n"
+                    f"<b>Before:</b>\n<code>{old_text}</code>\n\n"
+                    f"<b>After:</b>\n<code>{new_text}</code>"
                 )
                 await ether.send_message("me", log_msg)
         
@@ -78,8 +78,8 @@ def setup(ether, db, owner_id):
             
             if cached:
                 log_msg = (
-                    "🗑️ <b>Message Deleted</b>\n"
-                    f"👤 <b>User:</b> <a href='tg://user?id={cached['sender_id']}'>{cached['sender_id']}</a>\n\n"
+                    "<b>Message Deleted</b>\n"
+                    f"<b>User:</b> <a href='tg://user?id={cached['sender_id']}'>{cached['sender_id']}</a>\n\n"
                     f"<b>Original Content:</b>\n<code>{cached['text']}</code>"
                 )
                 await ether.send_message("me", log_msg)

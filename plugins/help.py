@@ -78,7 +78,7 @@ def setup(ether, db, owner_id):
             logger.error(f"Inline help failed: {e}")
             await event.respond(
                 "<blockquote>"
-                "🔥 <b>Ether Help</b>\n\n"
+                "<b>Ether Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
                 "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"

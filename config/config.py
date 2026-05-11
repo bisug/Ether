@@ -46,10 +46,13 @@ class Config:
     MONGO_URI: str = os.getenv("MONGO_URI", "")
     DB_NAME: str = os.getenv("DB_NAME", "Ether")
     
+    AUTO_READ: bool = False # Default state
+    
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
     # Dm Protection Settings
     DM_MAX_WARNS: int = int(os.getenv("DM_MAX_WARNS", "3"))
+    TEMP_BAN_DURATION: int = 43200 # 12 Hours
     
     # Web Service
     # Auto-enable if PORT is provided by environment (common in cloud hosts like Render/Heroku)

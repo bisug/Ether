@@ -42,7 +42,7 @@ def setup(ether, db, owner_id):
             target = reply.sender_id
         
         if not target:
-            await event.edit("<blockquote>❌ Reply to a user or provide username/ID to GBan.</blockquote>")
+            await event.edit("<blockquote><b>Command Error:</b> Reply to a user or provide username/ID to GBan.</blockquote>")
             return
 
         try:
@@ -50,14 +50,14 @@ def setup(ether, db, owner_id):
             user_id = entity.id
             user_name = entity.first_name
         except Exception as e:
-            await event.edit(f"<blockquote>❌ User not found: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote><b>Identity Error:</b> User not found: {str(e)}</blockquote>")
             return
 
         if user_id == owner_id:
-            await event.edit("<blockquote>❌ You cannot GBan yourself!</blockquote>")
+            await event.edit("<blockquote><b>Validation Error:</b> You cannot GBan yourself!</blockquote>")
             return
 
-        await event.edit(f"<blockquote>🚫 <b>Initiating Global Ban for {user_name}...</b></blockquote>")
+        await event.edit(f"<blockquote><b>Initiating Global Ban for {user_name}...</b></blockquote>")
 
         success_count = 0
         fail_count = 0
@@ -82,10 +82,10 @@ def setup(ether, db, owner_id):
             
         await event.edit(
             f"<blockquote>"
-            f"✅ <b>Global Ban Complete</b>\n\n"
-            f"👤 <b>User:</b> {user_name} (<code>{user_id}</code>)\n"
-            f"🛡️ <b>Groups Banned:</b> {success_count}\n"
-            f"⚠️ <b>Failed/No Rights:</b> {fail_count}"
+            f"<b>Global Ban Complete</b>\n\n"
+            f"<b>User:</b> {user_name} (<code>{user_id}</code>)\n"
+            f"<b>Groups Banned:</b> {success_count}\n"
+            f"<b>Failed/No Rights:</b> {fail_count}"
             "</blockquote>"
         )
 
@@ -104,7 +104,7 @@ def setup(ether, db, owner_id):
             target = reply.sender_id
         
         if not target:
-            await event.edit("<blockquote>❌ Reply to a user or provide username/ID to Un-GBan.</blockquote>")
+            await event.edit("<blockquote><b>Command Error:</b> Reply to a user or provide username/ID to Un-GBan.</blockquote>")
             return
 
         try:
@@ -114,7 +114,7 @@ def setup(ether, db, owner_id):
             await event.edit(f"<blockquote>❌ User not found: {str(e)}</blockquote>")
             return
 
-        await event.edit(f"<blockquote>🕊️ <b>Removing Global Ban...</b></blockquote>")
+        await event.edit(f"<blockquote><b>Removing Global Ban...</b></blockquote>")
 
         success_count = 0
         async for dialog in ether.iter_dialogs():
@@ -135,6 +135,6 @@ def setup(ether, db, owner_id):
             except Exception:
                 pass
 
-        await event.edit(f"<blockquote>✅ <b>Global Ban Lifted</b> from {success_count} groups.</blockquote>")
+        await event.edit(f"<blockquote><b>Global Ban Lifted</b> from {success_count} groups.</blockquote>")
 
     logger.info("Admin plugin loaded (.gban, .ungban)")

@@ -44,7 +44,7 @@ def setup(ether, db, owner_id):
         user = await ether.get_me()
         
         # Determine emoji
-        emoji = event.pattern_match.group(1) or "🤔"
+        emoji = event.pattern_match.group(1) or ""
         
         await event.edit("<blockquote><b>Kanging Sticker...</b></blockquote>")
 
@@ -60,7 +60,7 @@ def setup(ether, db, owner_id):
                 
         except Exception as e:
             logger.error(f"Kang error: {e}")
-            await event.edit(f"<blockquote>❌ Kang failed: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote>Kang failed: {str(e)}</blockquote>")
 
 # ============================================
 # .sticker Command (Image to Sticker)
@@ -72,15 +72,15 @@ def setup(ether, db, owner_id):
             return
 
         if not event.is_reply:
-            await event.edit("<blockquote>❌ Reply to an image to convert to sticker.</blockquote>")
+            await event.edit("<blockquote>Reply to an image to convert to sticker.</blockquote>")
             return
 
         reply = await event.get_reply_message()
         if not reply.photo and not (reply.document and "image" in reply.document.mime_type):
-            await event.edit("<blockquote>❌ Reply to an image file.</blockquote>")
+            await event.edit("<blockquote>Reply to an image file.</blockquote>")
             return
 
-        await event.edit("<blockquote>⏳ <b>Converting to Sticker...</b></blockquote>")
+        await event.edit("<blockquote><b>Converting to Sticker...</b></blockquote>")
 
         try:
             photo = await reply.download_media()
@@ -94,7 +94,7 @@ def setup(ether, db, owner_id):
             os.remove(photo)
         except Exception as e:
             logger.error(f"Sticker convert error: {e}")
-            await event.edit(f"<blockquote>❌ Conversion failed: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote>Conversion failed: {str(e)}</blockquote>")
 
 # ============================================
 # .getsticker Command (Sticker to Image)
@@ -106,15 +106,15 @@ def setup(ether, db, owner_id):
             return
 
         if not event.is_reply:
-            await event.edit("<blockquote>❌ Reply to a sticker to get it as an image.</blockquote>")
+            await event.edit("<blockquote>Reply to a sticker to get it as an image.</blockquote>")
             return
 
         reply = await event.get_reply_message()
         if not reply.sticker:
-            await event.edit("<blockquote>❌ Reply to a sticker.</blockquote>")
+            await event.edit("<blockquote>Reply to a sticker.</blockquote>")
             return
 
-        await event.edit("<blockquote>⏳ <b>Extracting Image...</b></blockquote>")
+        await event.edit("<blockquote><b>Extracting Image...</b></blockquote>")
 
         try:
             image = await reply.download_media()
@@ -128,6 +128,6 @@ def setup(ether, db, owner_id):
             os.remove(image)
         except Exception as e:
             logger.error(f"Get sticker error: {e}")
-            await event.edit(f"<blockquote>❌ Extraction failed: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote>Extraction failed: {str(e)}</blockquote>")
 
     logger.info("Stickers plugin loaded (.kang, .sticker)")

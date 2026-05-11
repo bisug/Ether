@@ -65,7 +65,7 @@ userbot_wrapper = None
 plugin_loader = None
 
 HELP_DATA = {
-    "text": "<blockquote>🔥 <b>Ether Userbot Help</b></blockquote>",
+    "text": "<blockquote><b>Ether Userbot Help</b></blockquote>",
     "buttons": None
 }
 
@@ -80,23 +80,23 @@ SHORTCUT_DATA = {}
 
 main_buttons = [
     [
-        Button.inline("🛡️ DM Protection", b"help_dm"),
-        Button.inline("📁 Shortcuts", b"help_shortcut")
+        Button.inline("DM Protection", b"help_dm"),
+        Button.inline("Shortcuts", b"help_shortcut")
     ],
     [
-        Button.inline("👥 TagAll", b"help_tagall"),
-        Button.inline("🎭 Fonts", b"help_fonts")
+        Button.inline("TagAll", b"help_tagall"),
+        Button.inline("Fonts", b"help_fonts")
     ],
     [
-        Button.inline("🛡️ DM Shield", b"help_shield"),
+        Button.inline("DM Shield", b"help_shield"),
     ],
     [
-        Button.inline("⚡ Ping System", b"help_ping"),
-        Button.inline("📊 System Info", b"help_system")
+        Button.inline("Ping System", b"help_ping"),
+        Button.inline("System Info", b"help_system")
     ],
     [
-        Button.inline("🤖 Auto-Reply", b"help_auto"),
-        Button.inline("👁️ Privacy & Logs", b"help_privacy")
+        Button.inline("Auto-Reply", b"help_auto"),
+        Button.inline("Privacy & Logs", b"help_privacy")
     ]
 ]
 
@@ -116,7 +116,7 @@ async def inline_help(event):
             id="help_menu",
             title="Ether Help Menu",
             description="Click to see help with buttons",
-            text="<blockquote>🔥 <b>Ether Userbot Help</b>\n\nSelect a feature below:</blockquote>",
+            text="<blockquote><b>Ether Userbot Help</b>\n\nSelect a feature below:</blockquote>",
             buttons=main_buttons
         )
         
@@ -254,16 +254,16 @@ async def inline_help(event):
         try:
             text = event.text.replace("fonts:", "", 1)
 
-            result_text = "🎭 <b>Font Styles</b>\n\n"
+            result_text = "<b>Font Styles</b>\n\n"
 
             for key in FONT_MAPS:
                 styled = apply_font(text, key)
-                result_text += f"{key} → <code>{styled}</code>\n"
+                result_text += f"{key} -> <code>{styled}</code>\n"
 
             buttons = [
                 [
-                    Button.inline("✨ Style", f"font_style:{text}".encode()),
-                    Button.inline("🎲 Mix", f"font_mix:{text}".encode())
+                    Button.inline("Style", f"font_style:{text}".encode()),
+                    Button.inline("Mix", f"font_mix:{text}".encode())
                 ]
             ]
 
@@ -300,22 +300,22 @@ async def inline_help(event):
         result = builder.photo(
             file="assets/ether_logo.png",
             text=(
-                "⚡ <b>Ether Userbot is Alive</b>\n\n"
+                "<b>Ether Userbot is Alive</b>\n\n"
                 "<blockquote>"
-                f"🤖 Bot: {bot_info}\n"
-                "🟢 Status: ONLINE\n"
-                f"⏳ Uptime: {uptime}\n"
-                f"🖥️ CPU: {cpu}%\n"
-                f"📊 RAM: {ram}%\n"
-                f"💾 Disk: {disk}%\n"
-                "📡 Telethon: CONNECTED\n"
-                "💾 Database: STABLE\n"
+                f"Client: {bot_info}\n"
+                "Status: ONLINE\n"
+                f"Uptime: {uptime}\n"
+                f"CPU: {cpu}%\n"
+                f"RAM: {ram}%\n"
+                f"Disk: {disk}%\n"
+                "Telethon: CONNECTED\n"
+                "Database: STABLE\n"
                 "</blockquote>\n\n"
-                "🚀 <i>All systems operational</i>"
+                "<i>All systems operational</i>"
             ),
             buttons=[
                 [
-                    Button.url("📂 Repository", "https://github.com/LearningBotsOfficial/Ether")
+                    Button.url("Repository", "https://github.com/LearningBotsOfficial/Ether")
                 ]
             ]
         )
@@ -332,7 +332,7 @@ async def inline_help(event):
 @owner_only
 async def cb_back(event):
     await event.edit(
-        "<blockquote>🔥 <b>Ether Userbot Help</b>\n\nSelect a feature below:</blockquote>",
+        "<blockquote><b>Ether Userbot Help</b>\n\nSelect a feature below:</blockquote>",
         buttons=main_buttons
     )
 
@@ -343,12 +343,12 @@ async def cb_back(event):
 async def cb_dm(event):
     await event.edit(
         "<blockquote>"
-        "🛡️ <b>DM Protection System</b>\n\n"
+        "<b>DM Protection System</b>\n\n"
         "<b>Overview:</b>\n"
         "When someone messages you:\n"
-        "1️⃣ First message → Welcome message sent\n"
-        "2️⃣ Follow-ups → Warning counter (max 3)\n"
-        "3️⃣ After max warnings → Auto block\n\n"
+        "• First message → Welcome message sent\n"
+        "• Follow-ups → Warning counter (max 3)\n"
+        "• After max warnings → Auto block\n\n"
         "Only users you <code>.allow</code> can message freely.\n\n"
         "<b>Commands:</b>\n"
         "<code>.setwelcome</code> - Set welcome message with buttons\n"
@@ -373,7 +373,7 @@ async def cb_dm(event):
 async def cb_shortcut(event):
     await event.edit(
         "<blockquote>"
-        "📁 <b>Shortcuts System</b>\n\n"
+        "<b>Shortcuts System</b>\n\n"
         "<b>Overview:</b>\n"
         "Save messages, images, and buttons with custom names for quick access.\n"
         "• <b>Text:</b> Save formatted text with bold, italic, code\n"
@@ -547,8 +547,9 @@ async def font_callbacks(event):
                 mixed += char
 
         await event.edit(
-            f"<blockquote>"
-            f"🎲 <b>Mixed Style</b>\n\n<code>{mixed}</code>"
+            "<blockquote>"
+            "<b>Mixed Style</b>\n\n"
+            f"<code>{mixed}</code>"
             "</blockquote>"
         )
 
@@ -560,14 +561,14 @@ async def cb_shield(event):
 
     await event.edit(
         "<blockquote>"
-        "🛡️ <b>DM Shield System</b>\n\n"
+        "<b>DM Shield System</b>\n\n"
         
         "<b>Overview:</b>\n"
         "Automatically protects your DM from unwanted messages.\n\n"
         
         "<b>What it blocks:</b>\n"
-        "🔗 Links (t.me, https, tg://)\n"
-        "👤 Usernames (@spam tags)\n\n"
+        "• Links (t.me, https, tg://)\n"
+        "• Usernames (@spam tags)\n\n"
         
         "<b>Commands:</b>\n"
         "<code>.shield</code> - Open control panel\n"
@@ -592,11 +593,11 @@ async def cb_shield(event):
 
 BOT_WELCOME_TEXT = (
     "<blockquote>"
-    "⚡ <b>Welcome to Ether Userbot</b>\n\n"
+    "<b>Ether Userbot</b>\n\n"
     "A fast, modern Telegram userbot built for automation and control.\n\n"
-    "🔒 <b>Security:</b> 99% safe — no need to generate session strings from unknown sources.\n"
+    "<b>Security:</b> 99% safe — no need to generate session strings from unknown sources.\n"
     "For full transparency, check the source code below.\n\n"
-    "🚀 Manage Telegram like a pro."
+    "Manage Telegram like a pro."
     "</blockquote>"
 )
 
@@ -604,10 +605,10 @@ BOT_WELCOME_IMAGE = "assets/ether_logo.png"
 
 bot_dm_buttons = [
     [
-        Button.url("📢 Updates", "https://t.me/Ether_Update"),
-        Button.url("💬 Support Group", "https://t.me/EtherSupport")
+        Button.url("Updates", "https://t.me/Ether_Update"),
+        Button.url("Support Group", "https://t.me/EtherSupport")
     ],
-    [Button.url("📂 Source Code", "https://github.com/LearningBotsOfficial/Ether")],
+    [Button.url("Source Code", "https://github.com/LearningBotsOfficial/Ether")],
 ]
 
 # ============================================
@@ -618,11 +619,11 @@ bot_dm_buttons = [
 async def bot_start_handler(event):
     if event.sender_id != Config.OWNER_ID:
         await event.reply(
-            "<blockquote>🔥 <b>Welcome to Ether Userbot</b>\n\n"
+            "<blockquote><b>Welcome to Ether Userbot</b>\n\n"
             "This is a private instance of Ether. If you want your own powerful userbot, click the button below to get the source code and host it yourself!</blockquote>",
             buttons=[
-                [Button.url("📁 Get Source", "https://github.com/LearningBotsOfficial/Ether")],
-                [Button.url("📢 Updates", "https://t.me/Ether_Update"), Button.url("💬 Support", "https://t.me/Ether_Support")]
+                [Button.url("Source", "https://github.com/LearningBotsOfficial/Ether")],
+                [Button.url("Updates", "https://t.me/Ether_Update"), Button.url("Support", "https://t.me/Ether_Support")]
             ]
         )
         return
@@ -655,7 +656,7 @@ async def bot_start_handler(event):
 
 @bot.on(events.NewMessage(pattern=r"^/id$", incoming=True))
 async def bot_id_handler(event):
-    await event.reply(f"<blockquote>🆔 <b>Your ID:</b> <code>{event.sender_id}</code>\n💬 <b>Chat ID:</b> <code>{event.chat_id}</code></blockquote>")
+    await event.reply(f"<blockquote><b>Your ID:</b> <code>{event.sender_id}</code>\n<b>Chat ID:</b> <code>{event.chat_id}</code></blockquote>")
 
 # ============================================
 # Administrative Commands (Owner Only)
@@ -665,18 +666,18 @@ async def bot_id_handler(event):
 @owner_only
 async def bot_login_handler(event):
     if event.sender_id != Config.OWNER_ID:
-        await event.reply("<blockquote>❌ This command is only for the admin.</blockquote>")
+        await event.reply("<blockquote><b>Access Denied:</b> This command is only for the admin.</blockquote>")
         return
     
     if userbot_client is None:
-        await event.reply("❌ Userbot client not initialized. Please restart the bot.")
+        await event.reply("<blockquote><b>System Error:</b> Userbot client not initialized. Please restart the bot.</blockquote>")
         return
     
     login_state[Config.OWNER_ID] = {"step": "phone"}
     
     await event.reply(
         "<blockquote>"
-        "🔐 <b>Ether Login System</b>\n\n"
+        "<b>Ether Login System</b>\n\n"
         "Please enter your phone number with country code.\n\n"
         "<i>Example: +9198*****</i>\n\n"
         "Send /cancel to abort."
@@ -697,7 +698,7 @@ async def bot_cancel_handler(event):
     
     if Config.OWNER_ID in login_state:
         del login_state[Config.OWNER_ID]
-        await event.reply("<blockquote>❌ Login cancelled.</blockquote>")
+        await event.reply("<blockquote><b>Session Action:</b> Login cancelled.</blockquote>")
 
 
 # ============================================
@@ -710,7 +711,7 @@ async def bot_restart_handler(event):
     if event.sender_id != Config.OWNER_ID:
         return
         
-    await event.reply("<blockquote>🔄 <b>System Restart Initiated</b>\n\nThe bot is restarting now...</blockquote>")
+    await event.reply("<blockquote><b>System Restart Initiated</b>\n\nThe bot is restarting now...</blockquote>")
     
     # Give it a moment
     await asyncio.sleep(2)
@@ -941,7 +942,7 @@ async def bot_login_flow_handler(event):
 @bot.on(events.NewMessage(pattern=r"^/remove$", incoming=True, func=lambda e: e.is_private))
 async def bot_remove_handler(event):
     if event.sender_id != Config.OWNER_ID:
-        await event.reply("<blockquote>❌ This command is only for the admin.</blockquote>")
+        await event.reply("<blockquote><b>Access Denied:</b> This command is only for the admin.</blockquote>")
         return
     
     session_file = f"{Config.SESSION_NAME}.session"
@@ -1034,7 +1035,7 @@ def apply_font(text, font_key):
 async def cb_auto(event):
     await event.edit(
         "<blockquote>"
-        "🤖 <b>Auto-Reply System</b>\n\n"
+        "<b>Auto-Reply System</b>\n\n"
         "<b>Auto-Reply:</b>\n"
         "The bot can automatically respond to specific keywords in DMs.\n"
         "• <code>.autoreply \"trigger\" | response</code> - Add text\n"
@@ -1088,6 +1089,16 @@ class EtherBot:
     async def stop(self) -> None:
         await bot.disconnect()
         logger.info("Bot stopped")
+
+
+async def send_log(text: str, buttons=None):
+    """Sends a notification log to the owner via the Bot UI."""
+    if not Config.BOT_TOKEN or not Config.OWNER_ID:
+        return
+    try:
+        await bot.send_message(Config.OWNER_ID, text, buttons=buttons)
+    except Exception as e:
+        logger.error(f"Failed to send log to owner: {e}")
 
 
 ether_bot = EtherBot()
