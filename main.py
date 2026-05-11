@@ -94,7 +94,7 @@ async def run_userbot():
             try:
                 # Wait for shutdown or just sleep
                 done, pending = await asyncio.wait(
-                    [asyncio.sleep(30), shutdown_event.wait()],
+                    [asyncio.create_task(asyncio.sleep(30)), asyncio.create_task(shutdown_event.wait())],
                     return_when=asyncio.FIRST_COMPLETED
                 )
                 for task in pending:
@@ -140,7 +140,7 @@ async def run_userbot():
         try:
             # Wait for disconnection or shutdown signal
             done, pending = await asyncio.wait(
-                [client.run_until_disconnected(), shutdown_event.wait()],
+                [asyncio.create_task(client.run_until_disconnected()), asyncio.create_task(shutdown_event.wait())],
                 return_when=asyncio.FIRST_COMPLETED
             )
             
@@ -180,7 +180,7 @@ async def run_bot():
     # We use wait to handle shutdown event alongside bot.run()
     try:
         done, pending = await asyncio.wait(
-            [ether_bot.run(), shutdown_event.wait()],
+            [asyncio.create_task(ether_bot.run()), asyncio.create_task(shutdown_event.wait())],
             return_when=asyncio.FIRST_COMPLETED
         )
         for task in pending:
