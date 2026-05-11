@@ -50,6 +50,9 @@ Unlike traditional userbots that require risky "String Sessions" generated via t
 <a href="https://render.com/deploy?repo=https://github.com/LearningBotsOfficial/Ether">
   <img src="https://render.com/images/deploy-to-render-button.svg" width="170">
 </a>
+<a href="https://www.heroku.com/deploy/?template=https://github.com/LearningBotsOfficial/Ether">
+  <img src="https://www.herokucdn.com/deploy/button.svg" width="170" alt="Deploy to Heroku">
+</a>
 
 <br>
 
