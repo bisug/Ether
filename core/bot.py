@@ -95,6 +95,7 @@ main_buttons = [
         Button.inline("📊 System Info", b"help_system")
     ],
     [
+        Button.inline("🤖 Auto-Reply", b"help_auto"),
         Button.inline("👁️ Privacy & Logs", b"help_privacy")
     ]
 ]
@@ -362,7 +363,7 @@ async def cb_dm(event):
         "• <b>Auto-block</b> at max warnings\n\n"
         "Use <code>.setwarn &lt;number&gt;</code> to change limit"
         "</blockquote>",
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 # ============================================
@@ -392,7 +393,7 @@ async def cb_shortcut(event):
         "• Button format: <code>[Button.url('Text', 'URL')]</code>\n"
         "• Button format: <code>[Button.inline('Text', 'data')]</code>"
         "</blockquote>",
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 # ============================================
@@ -402,7 +403,7 @@ async def cb_shortcut(event):
 async def cb_tagall(event):
     await event.edit(
         "<blockquote>"
-        "👥 <b>TagAll </b>\n\n"
+        "<b>TagAll</b>\n\n"
         "Mention group members in small batches with delay to avoid spam and limits.\n\n"
         
         "<b>Command:</b>\n"
@@ -417,7 +418,7 @@ async def cb_tagall(event):
         "• Uses safe limits to protect your account"
         "</blockquote>",
         
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 # ============================================
@@ -427,7 +428,7 @@ async def cb_tagall(event):
 async def cb_ping(event):
     await event.edit(
         "<blockquote>"
-        "⚡ <b>Ping System</b>\n\n"
+        "<b>Ping System</b>\n\n"
         "<b>Overview:</b>\n"
         "The ping command measures how quickly the userbot responds.\n"
         "Lower = better.\n\n"
@@ -435,7 +436,7 @@ async def cb_ping(event):
         "<code>.ping</code> - Check response time\n\n"
         "Returns time in milliseconds."
         "</blockquote>",
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 # ============================================
@@ -445,7 +446,7 @@ async def cb_ping(event):
 async def cb_system(event):
     await event.edit(
         "<blockquote>"
-        "📊 <b>System Management</b>\n\n"
+        "<b>System Management</b>\n\n"
         "• <code>.ping</code> - Check latency\n"
         "• <code>.alive</code> - Check system status\n"
         "• <code>.restart</code> - Reboot Ether\n"
@@ -453,7 +454,7 @@ async def cb_system(event):
         "• <code>.status</code> - Check away duration\n"
         "• <code>.id</code> - Get chat/user IDs"
         "</blockquote>",
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 
@@ -464,7 +465,7 @@ async def cb_system(event):
 async def cb_privacy(event):
     await event.edit(
         "<blockquote>"
-        "🛡️ <b>Privacy & Protection</b>\n\n"
+        "<b>Privacy & Protection</b>\n\n"
         "<b>Anti-Flood:</b>\n"
         "Automatically blocks users who spam your DMs.\n"
         "• <code>.antiflood on</code> - Enable protection\n"
@@ -476,7 +477,7 @@ async def cb_privacy(event):
         "<b>Self-Destruct:</b>\n"
         "• <code>.sd &lt;secs&gt; &lt;text&gt;</code> - Send vanishing text"
         "</blockquote>",
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 # ============================================
@@ -486,7 +487,7 @@ async def cb_privacy(event):
 async def cb_fonts(event):
     await event.edit(
         "<blockquote>"
-        "🎭 <b>Fonts & Styles System</b>\n\n"
+        "<b>Fonts & Styles System</b>\n\n"
         "<b>Overview:</b>\n"
         "Convert normal text into stylish fonts and modern effects.\n"
         "Includes aesthetic, glitch, hacker, and decorative styles.\n\n"
@@ -510,7 +511,7 @@ async def cb_fonts(event):
         "• Combine with shortcuts for fast reuse"
         "</blockquote>",
         
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 # ============================================
@@ -526,9 +527,9 @@ async def font_callbacks(event):
 
         result = (
             "<blockquote>"
-            f"✨ <code>{text}</code>\n"
-            f"🔥 <code>{apply_font(text,'2')}</code>\n"
-            f"❤️ <code>{apply_font(text,'3')}</code>"
+            f"<code>{text}</code>\n"
+            f"<code>{apply_font(text,'2')}</code>\n"
+            f"<code>{apply_font(text,'3')}</code>"
             "</blockquote>"
         )
 
@@ -582,7 +583,7 @@ async def cb_shield(event):
         "Use allow system to whitelist trusted users."
         "</blockquote>",
         
-        buttons=[[Button.inline("🔙 Back", b"help_back")]]
+        buttons=[[Button.inline("Back", b"help_back")]]
     )
 
 # ============================================
@@ -1025,6 +1026,29 @@ FONT_MAPS = {
 def apply_font(text, font_key):
     return text.lower().translate(FONT_MAPS[font_key])
 
+
+# ============================================
+
+@bot.on(events.CallbackQuery(data=b"help_auto"))
+@owner_only
+async def cb_auto(event):
+    await event.edit(
+        "<blockquote>"
+        "🤖 <b>Auto-Reply System</b>\n\n"
+        "<b>Auto-Reply:</b>\n"
+        "The bot can automatically respond to specific keywords in DMs.\n"
+        "• <code>.autoreply \"trigger\" | response</code> - Add text\n"
+        "• <code>.autoreply trigger</code> (reply to a message) - Save media/post\n"
+        "• <code>.delreply trigger</code> - Remove\n"
+        "• <code>.replies</code> - List all active triggers\n\n"
+        "<b>Scheduler:</b>\n"
+        "Send messages after a specific delay.\n"
+        "• <code>.schedule &lt;secs&gt; | &lt;text&gt;</code>\n\n"
+        "<b>Example:</b>\n"
+        "<code>.autoreply \"hello world\" | Hey there!</code>"
+        "</blockquote>",
+        buttons=[[Button.inline("Back", b"help_back")]]
+    )
 
 # ============================================
 # Bot Class

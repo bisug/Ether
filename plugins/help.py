@@ -39,7 +39,7 @@ def setup(ether, db, owner_id):
         if not bot_username:
             await event.reply(
                 "<blockquote>"
-                "🔥 <b>Ether Help</b>\n\n"
+                "<b>Ether Help</b>\n\n"
                 "<code>.commands</code> - List all commands\n"
                 "<code>.ping</code> - Check latency\n"
                 "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"
@@ -63,7 +63,7 @@ def setup(ether, db, owner_id):
             else:
                 await event.respond(
                     "<blockquote>"
-                    "🔥 <b>Ether Help</b>\n\n"
+                    "<b>Ether Help</b>\n\n"
                     "<code>.commands</code> - List all commands\n"
                     "<code>.ping</code> - Check latency\n"
                     "<code>.shortcut &lt;name&gt;</code> - Save shortcut\n"
@@ -97,7 +97,7 @@ def setup(ether, db, owner_id):
             
         command_list = (
             "<blockquote>"
-            "📜 <b>Available Commands</b>\n\n"
+            "<b>Available Commands</b>\n\n"
             "<b>System:</b>\n"
             "• <code>.alive</code> - System status\n"
             "• <code>.ping</code> - Check latency\n"
@@ -109,8 +109,7 @@ def setup(ether, db, owner_id):
             "<b>Profile:</b>\n"
             "• <code>.setpfp</code> - Set profile pic (reply)\n"
             "• <code>.setbio &lt;text&gt;</code> - Update bio\n"
-            "• <code>.setname &lt;name&gt;</code> - Update name\n"
-            "• <code>.afk &lt;reason&gt;</code> - Set AFK status\n\n"
+            "• <code>.setname &lt;name&gt;</code> - Update name\n\n"
             "<b>Admin:</b>\n"
             "• <code>.gban</code> - Global ban (reply/target)\n"
             "• <code>.ungban</code> - Lift global ban\n\n"
@@ -133,6 +132,11 @@ def setup(ether, db, owner_id):
             "• <code>.get &lt;name&gt;</code> - Send shortcut\n"
             "• <code>.shortcuts</code> - List all\n"
             "• <code>.delshortcut &lt;name&gt;</code> - Delete\n\n"
+            "<b>Auto-Reply:</b>\n"
+            "• <code>.autoreply \"trigger\" | msg</code>\n"
+            "• <code>.autoreply trigger</code> (reply to post)\n"
+            "• <code>.replies</code> - List all\n"
+            "• <code>.schedule &lt;secs&gt; | &lt;msg&gt;</code>\n\n"
             "<b>Utility:</b>\n"
             "• <code>.tagall &lt;msg&gt;</code> - Mention all\n"
             "• <code>.fonts &lt;text&gt;</code> - Style text\n"
@@ -140,5 +144,5 @@ def setup(ether, db, owner_id):
         )
         
         await event.edit(command_list)
-
+    
     logger.info("Help plugin loaded (inline mode)")

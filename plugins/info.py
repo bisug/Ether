@@ -38,38 +38,38 @@ def setup(ether, db, owner_id):
 
         target = event.pattern_match.group(1)
         
-        text = "🆔 <b>Identity Info</b>\n\n"
+        text = "<b>Identity Info</b>\n\n"
         
         # 1. Chat Info
-        text += f"👥 <b>Chat ID:</b> <code>{event.chat_id}</code>\n"
+        text += f"<b>Chat ID:</b> <code>{event.chat_id}</code>\n"
         
         # 2. Reply Info
         if event.is_reply:
             reply = await event.get_reply_message()
             sender_id = reply.sender_id
-            text += f"👤 <b>Replied User:</b> <code>{sender_id}</code>\n"
-            text += f"📩 <b>Message ID:</b> <code>{reply.id}</code>\n"
+            text += f"<b>Replied User:</b> <code>{sender_id}</code>\n"
+            text += f"<b>Message ID:</b> <code>{reply.id}</code>\n"
             
             # If forwarded
             if reply.forward:
                 fwd = reply.forward
                 if fwd.sender_id:
-                    text += f"⏩ <b>Forwarded From:</b> <code>{fwd.sender_id}</code>\n"
+                    text += f"<b>Forwarded From:</b> <code>{fwd.sender_id}</code>\n"
         
         # 3. Targeted Entity Info
         elif target:
             try:
                 entity = await ether.get_entity(target)
-                text += f"🎯 <b>Target ID:</b> <code>{entity.id}</code>\n"
-                text += f"🏷️ <b>Type:</b> {type(entity).__name__}\n"
+                text += f"<b>Target ID:</b> <code>{entity.id}</code>\n"
+                text += f"<b>Type:</b> {type(entity).__name__}\n"
             except Exception as e:
                 text += f"❌ <b>Error:</b> {str(e)}\n"
         
         # 4. Self Info (if no reply/target)
         else:
-            text += f"👤 <b>Your ID:</b> <code>{event.sender_id}</code>\n"
+            text += f"<b>Your ID:</b> <code>{event.sender_id}</code>\n"
 
-        await event.edit(text)
+        await event.edit(f"<blockquote>{text}</blockquote>")
 
 # ============================================
 # .info Command
@@ -81,7 +81,7 @@ def setup(ether, db, owner_id):
             return
 
         target = event.pattern_match.group(1)
-        await event.edit("<blockquote>🔍 <b>Analyzing Entity...</b></blockquote>")
+        await event.edit("<blockquote><b>Analyzing Entity...</b></blockquote>")
         
         try:
             # Determine Entity
@@ -128,17 +128,18 @@ def setup(ether, db, owner_id):
                 full = await ether(functions.messages.GetFullChatRequest(chat_id=entity.id))
                 details = {
                     "Type": "Group (Basic) 👥",
+                    "Type": "Group (Basic)",
                     "Title": entity.title,
                     "ID": entity.id,
                     "Members": entity.participants_count,
                     "Description": "Basic Telegram group"
                 }
             else:
-                await event.edit(f"<blockquote>❌ Unknown entity type: {type(entity).__name__}</blockquote>")
+                await event.edit(f"<blockquote><b>Error:</b> Unknown entity type: {type(entity).__name__}</blockquote>")
                 return
 
             # Format text
-            info_text = f"🏷️ <b>{details.get('Type', 'Entity')} Info</b>\n\n"
+            info_text = f"<b>{details.get('Type', 'Entity')} Info</b>\n\n"
             info_text += "<blockquote>"
             for k, v in details.items():
                 if k not in ["Type", "Bio", "Description"]:

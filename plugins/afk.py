@@ -49,7 +49,7 @@ def setup(ether, db, owner_id):
         AFK_STATE["reason"] = reason
         AFK_STATE["time"] = time.time()
 
-        await event.edit(f"<blockquote>💤 <b>I'm now AFK</b>\n\n<b>Reason:</b> {reason}</blockquote>")
+        await event.edit(f"<blockquote><b>I'm now AFK</b>\n\n<b>Reason:</b> {reason}</blockquote>")
 
 # ============================================
 # .status Command (Check AFK status)
@@ -61,7 +61,7 @@ def setup(ether, db, owner_id):
             return
 
         if not AFK_STATE["is_afk"]:
-            await event.edit("<blockquote>✅ <b>Status:</b> Active (Not AFK)</blockquote>")
+            await event.edit("<blockquote><b>Status:</b> Active (Not AFK)</blockquote>")
             return
 
         uptime = int(time.time() - AFK_STATE["time"])
@@ -72,7 +72,7 @@ def setup(ether, db, owner_id):
 
         await event.edit(
             f"<blockquote>"
-            f"💤 <b>Status: AFK</b>\n"
+            f"<b>Status: AFK</b>\n"
             f"<b>Reason:</b> {AFK_STATE['reason']}\n"
             f"<b>Duration:</b> {duration}"
             "</blockquote>"
@@ -129,7 +129,7 @@ def setup(ether, db, owner_id):
 
             reply_text = (
                 "<blockquote>"
-                "💤 <b>User is AFK</b>\n\n"
+                "<b>User is AFK</b>\n\n"
                 f"<b>Reason:</b> {AFK_STATE['reason']}\n"
                 f"<b>Since:</b> {duration} ago"
                 "</blockquote>"

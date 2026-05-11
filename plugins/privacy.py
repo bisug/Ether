@@ -75,21 +75,23 @@ def setup(ether, db, owner_id):
             logger.warning(f"Blocking user {user_id} due to flooding.")
             try:
                 await ether(functions.contacts.BlockRequest(id=user_id))
-                await event.reply("<blockquote>🚫 <b>Flood Detected!</b>\n\nYou have been blocked for spamming.</blockquote>")
+                await event.reply("<blockquote><b>Flood Detected!</b>\n\nYou have been blocked for spamming.</blockquote>")
                 del FLOOD_DATA[user_id]
             except Exception as e:
                 logger.error(f"Failed to block flooder: {e}")
 
     # 3. Privacy Commands
-    @ether.on(events.NewMessage(pattern=r"^\.autoread (on|off)$", outgoing=True))
+    @ether.on(events.NewMessage(pattern=r"^\.autoread\s+(on|off)$", outgoing=True))
     async def toggle_autoread(event):
         if event.sender_id != owner_id:
             return
-        cmd = event.pattern_match.group(1).lower()
-        status = "ENABLED" if cmd == "on" else "DISABLED"
-        await event.edit(f"<blockquote>👁️ <b>Auto-Read:</b> {status}</blockquote>")
+            
+        mode = event.pattern_match.group(1).lower()
+        Config.AUTO_READ = (mode == "on")
+        
+        await event.edit(f"<blockquote><b>Auto-Read:</b> <code>{mode.upper()}</code>\n\nIncoming messages will now be marked as read.</blockquote>")
 
-    @ether.on(events.NewMessage(pattern=r"^\.antiflood (on|off)$", outgoing=True))
+    @ether.on(events.NewMessage(pattern=r"^\.antiflood\s+(on|off)$", outgoing=True))
     async def toggle_antiflood(event):
         global ANTIFLOOD_ENABLED
         if event.sender_id != owner_id:
@@ -99,4 +101,4 @@ def setup(ether, db, owner_id):
         status = "ENABLED" if ANTIFLOOD_ENABLED else "DISABLED"
         await event.edit(f"<blockquote>🛡️ <b>Anti-Flood:</b> {status}</blockquote>")
 
-    logger.info("Privacy plugin loaded (Auto-read & Anti-flood active)")
+    logger.info("Privacy plugin loaded (Anti-flood active)")

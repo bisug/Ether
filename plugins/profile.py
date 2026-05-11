@@ -37,12 +37,12 @@ def setup(ether, db, owner_id):
             return
 
         if not event.is_reply:
-            await event.edit("<blockquote>❌ Reply to a photo to set it as your profile picture.</blockquote>")
+            await event.edit("<blockquote>Reply to a photo to set it as your profile picture.</blockquote>")
             return
 
         reply = await event.get_reply_message()
         if not reply.photo:
-            await event.edit("<blockquote>❌ The replied message must be a photo.</blockquote>")
+            await event.edit("<blockquote>The replied message must be a photo.</blockquote>")
             return
 
         await event.edit("<blockquote>⏳ <b>Updating Profile Picture...</b></blockquote>")
@@ -52,11 +52,11 @@ def setup(ether, db, owner_id):
             await ether(functions.photos.UploadProfilePhotoRequest(
                 file=await ether.upload_file(photo)
             ))
-            await event.edit("<blockquote>✅ <b>Profile Picture Updated Successfully!</b></blockquote>")
+            await event.edit("<blockquote><b>Profile Picture Updated Successfully!</b></blockquote>")
             os.remove(photo)
         except Exception as e:
             logger.error(f"PFP update error: {e}")
-            await event.edit(f"<blockquote>❌ Error updating PFP: {str(e)}</blockquote>")
+            await event.edit(f"<blockquote>Error updating PFP: {str(e)}</blockquote>")
 
 # ============================================
 # .setbio Command
@@ -69,14 +69,14 @@ def setup(ether, db, owner_id):
 
         bio = event.pattern_match.group(1)
         if len(bio) > 70:
-            await event.edit("<blockquote>❌ Bio text is too long (max 70 characters).</blockquote>")
+            await event.edit("<blockquote>Bio text is too long (max 70 characters).</blockquote>")
             return
 
         await event.edit("<blockquote>⏳ <b>Updating Bio...</b></blockquote>")
 
         try:
             await ether(functions.account.UpdateProfileRequest(about=bio))
-            await event.edit(f"<blockquote>✅ <b>Bio updated to:</b>\n<i>{bio}</i></blockquote>")
+            await event.edit(f"<blockquote><b>Bio updated to:</b>\n<i>{bio}</i></blockquote>")
         except Exception as e:
             logger.error(f"Bio update error: {e}")
             await event.edit(f"<blockquote>❌ Error updating bio: {str(e)}</blockquote>")
@@ -102,7 +102,7 @@ def setup(ether, db, owner_id):
                 last_name=last_name
             ))
             full_name = f"{first_name} {last_name}".strip()
-            await event.edit(f"<blockquote>✅ <b>Name updated to:</b> <code>{full_name}</code></blockquote>")
+            await event.edit(f"<blockquote><b>Name updated to:</b> <code>{full_name}</code></blockquote>")
         except Exception as e:
             logger.error(f"Name update error: {e}")
             await event.edit(f"<blockquote>❌ Error updating name: {str(e)}</blockquote>")

@@ -37,7 +37,7 @@ def setup(ether, db, owner_id):
             return
 
         if not event.is_reply:
-            await event.edit("<blockquote>❌ Reply to a sticker or image to kang it.</blockquote>")
+            await event.edit("<blockquote>Reply to a sticker or image to kang it.</blockquote>")
             return
 
         reply = await event.get_reply_message()
@@ -46,17 +46,17 @@ def setup(ether, db, owner_id):
         # Determine emoji
         emoji = event.pattern_match.group(1) or "🤔"
         
-        await event.edit("<blockquote>⏳ <b>Kanging Sticker...</b></blockquote>")
+        await event.edit("<blockquote><b>Kanging Sticker...</b></blockquote>")
 
         try:
             # Send the media to 'me' (Saved Messages)
             await ether.send_file(
                 "me",
                 reply.media,
-                caption=f"<blockquote>📦 <b>Ether Kang System</b>\n\n<b>Emoji:</b> {emoji}\n<b>Source:</b> {event.chat_id}</blockquote>"
+                caption=f"<blockquote><b>Ether Kang System</b>\n\n<b>Emoji:</b> {emoji}\n<b>Source:</b> {event.chat_id}</blockquote>"
             )
             
-            await event.edit(f"<blockquote>✅ <b>Media Kanged to Saved Messages!</b>\n\n<b>Emoji:</b> {emoji}</blockquote>")
+            await event.edit(f"<blockquote><b>Media Kanged to Saved Messages!</b>\n\n<b>Emoji:</b> {emoji}</blockquote>")
                 
         except Exception as e:
             logger.error(f"Kang error: {e}")
