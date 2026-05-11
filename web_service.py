@@ -17,13 +17,13 @@ async def run_web_service():
         logger.info("Web service is disabled via config.")
         return
         
-    logger.info(f"Starting web service on port {Config.PORT}...")
+    logger.info(f"System: WEB SERVICE ACTIVE (Port: {Config.PORT})")
     
     config = uvicorn.Config(
         app=app, 
         host="0.0.0.0", 
         port=Config.PORT, 
-        log_level="warning"
+        log_level="error"
     )
     server = uvicorn.Server(config)
     

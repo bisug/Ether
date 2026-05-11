@@ -52,8 +52,10 @@ class Config:
     DM_MAX_WARNS: int = int(os.getenv("DM_MAX_WARNS", "3"))
     
     # Web Service
-    WEB_SERVICE: bool = os.getenv("WEB_SERVICE", "false").lower() == "true"
-    PORT: int = int(os.getenv("PORT", "8080"))
+    # Auto-enable if PORT is provided by environment (common in cloud hosts like Render/Heroku)
+    _PORT_ENV = os.getenv("PORT")
+    WEB_SERVICE: bool = os.getenv("WEB_SERVICE", "true" if _PORT_ENV else "false").lower() == "true"
+    PORT: int = int(_PORT_ENV or os.getenv("PORT_VALUE", "8080"))
     
     @classmethod
     def validate(cls) -> None:
