@@ -37,13 +37,10 @@ logger = get_logger("EtherDM")
 
 DEFAULT_WELCOME_TEXT = (
     "<blockquote>"
-    "👋 Hello!\n\n"
-    "You've just reached Ether Userbot ⚡️\n\n"
-    "This DM is protected to prevent spam and unwanted messages.\n\n"
-    "⭐️ What you can do:\n\n"
-    "• Wait for approval\n"
-    "• Use buttons below for support\n\n"
-    "🕔 You'll be reviewed soon. Stay patient."
+    "👋 <b>Welcome!</b>\n\n"
+    "You have reached my private inbox. I am currently unavailable.\n\n"
+    "<i>Please leave your message and I will get back to you as soon as possible.</i>\n\n"
+    "🛡 <b>Protected by Ether</b>"
     "</blockquote>"
 )
 
@@ -87,7 +84,7 @@ def setup(ether, db, owner_id):
         
         user_id = event.chat_id
         await dm_service.allow_user(user_id)
-        await event.edit(f"✅ User allowed.")
+        await event.edit(f"<blockquote>✅ User allowed.</blockquote>")
     
     @ether.on(events.NewMessage(pattern=r"^\.disallow$", outgoing=True))
     async def disallow_handler(event):
@@ -100,7 +97,7 @@ def setup(ether, db, owner_id):
         
         user_id = event.chat_id
         await dm_service.disallow_user(user_id, owner_id)
-        await event.edit(f"🚫 User disallowed.")
+        await event.edit(f"<blockquote>🚫 User disallowed.</blockquote>")
     
 
 # ============================================
@@ -138,14 +135,13 @@ def setup(ether, db, owner_id):
             except Exception as e:
                 logger.error(f"Failed to download welcome image: {e}")
         
-        raw_text = msg.text or ""
-        parsed_text = parse_links(raw_text)
+        from telethon.extensions import html
+        if msg.entities:
+            parsed_text = html.unparse(msg.text, msg.entities)
+        else:
+            parsed_text = msg.text or ""
         
         parsed_text = re.sub(r'\[Button\.(url|inline)\([^\]]+\)\]', '', parsed_text).strip()
-        
-        parsed_text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', parsed_text)
-        parsed_text = re.sub(r'__(.+?)__', r'<i>\1</i>', parsed_text)
-        parsed_text = re.sub(r'`([^`]+)`', r'<code>\1</code>', parsed_text)
         
         buttons = None
         
@@ -207,11 +203,12 @@ def setup(ether, db, owner_id):
             WELCOME_DATA["image"] = image_path
             WELCOME_DATA["buttons"] = buttons
             
-            response = "✅ Welcome message saved."
+            response = "<blockquote>✅ Welcome message saved."
             if image_path:
                 response += "\n📷 Image included."
             if buttons:
                 response += f"\n🔘 {len(buttons)} button rows included."
+            response += "</blockquote>"
             await event.edit(response)
         except Exception as e:
             logger.error(f"Failed to save welcome: {e}")
@@ -235,19 +232,6 @@ def setup(ether, db, owner_id):
         
         await event.edit("🗑️ Welcome message cleared.")
 
-# ============================================
-# Set Warn Command
-# ============================================
-
-    @ether.on(events.NewMessage(pattern=r"^\.setwarn (\d+)$", outgoing=True))
-    async def setwarn_handler(event):
-        if event.sender_id != owner_id:
-            return
-        
-        max_warns = int(event.pattern_match.group(1))
-        
-        await dm_service.set_global_max_warns(owner_id, max_warns)
-        await event.edit(f"<blockquote>⚠️ Global max warnings set to {max_warns}.</blockquote>")
     
     @ether.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
     async def dm_handler(event):
@@ -309,7 +293,6 @@ def setup(ether, db, owner_id):
         
         if user.get("blocked"):
             try:
-                await event.reply("<blockquote>⛔ You are blocked from contacting this user.</blockquote>")
                 await ether(BlockRequest(user_id))
             except Exception as e:
                 logger.error(f"Block error for {user_id}: {e}")
@@ -318,18 +301,8 @@ def setup(ether, db, owner_id):
         if user.get("allowed"):
             await dm_service.increment_message_count(user_id)
             return
-        
-        warns = await dm_service.increment_warn(user_id)
-        user_max_warns = await dm_service.get_max_warns(user_id, owner_id)
-        
-        if warns >= user_max_warns:
-            await dm_service.block_user(user_id)
-            
-            try:
-                await send_welcome(f"{welcome_text}\n\n⛔ <b>You have been blocked after {warns} warnings.</b>")
-                await ether(BlockRequest(user_id))
-            except Exception as e:
-                logger.error(f"Auto-block failed for {user_id}: {e}")
-        else:
-            await send_welcome(f"{welcome_text}\n\n⚠️ <b>Warning {warns}/{user_max_warns}</b>\n<i>Continued messaging will result in a block.</i>")
+
+        # If they reach here, they exist but aren't allowed/blocked yet.
+        # We silently ignore their subsequent messages until allowed.
+        return
     

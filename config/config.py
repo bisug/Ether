@@ -46,7 +46,6 @@ class Config:
     MONGO_URI: str = os.getenv("MONGO_URI", "")
     DB_NAME: str = os.getenv("DB_NAME", "Ether")
     
-    AUTO_READ: bool = False # Default state
     
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     

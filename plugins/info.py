@@ -38,7 +38,7 @@ def setup(ether, db, owner_id):
 
         target = event.pattern_match.group(1)
         
-        text = "<b>Identity Info</b>\n\n"
+        text = "<blockquote><b>Identity Info</b>\n\n"
         
         # 1. Chat Info
         text += f"<b>Chat ID:</b> <code>{event.chat_id}</code>\n"
@@ -69,7 +69,8 @@ def setup(ether, db, owner_id):
         else:
             text += f"<b>Your ID:</b> <code>{event.sender_id}</code>\n"
 
-        await event.edit(f"<blockquote>{text}</blockquote>")
+        text += "</blockquote>"
+        await event.edit(text)
 
 # ============================================
 # .info Command
@@ -138,8 +139,8 @@ def setup(ether, db, owner_id):
                 return
 
             # Format text
-            info_text = f"<b>{details.get('Type', 'Entity')} Info</b>\n\n"
-            info_text += "<blockquote>"
+            info_text = "<blockquote>"
+            info_text += f"<b>{details.get('Type', 'Entity')} Info</b>\n\n"
             for k, v in details.items():
                 if k not in ["Type", "Bio", "Description"]:
                     info_text += f"<b>{k}:</b> <code>{v}</code>\n"

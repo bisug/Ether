@@ -142,14 +142,13 @@ def setup(ether, db, owner_id):
             except Exception as e:
                 logger.error(f"Failed to download shortcut sticker: {e}")
         
-        raw_text = msg.text or ""
-        parsed_text = parse_links(raw_text)
+        from telethon.extensions import html
+        if msg.entities:
+            parsed_text = html.unparse(msg.text, msg.entities)
+        else:
+            parsed_text = msg.text or ""
         
         parsed_text = re.sub(r'\[Button\.(url|inline)\([^\]]+\)\]', '', parsed_text).strip()
-        
-        parsed_text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', parsed_text)
-        parsed_text = re.sub(r'__(.+?)__', r'<i>\1</i>', parsed_text)
-        parsed_text = re.sub(r'`([^`]+)`', r'<code>\1</code>', parsed_text)
         
         buttons = None
         

@@ -142,11 +142,11 @@ def setup(ether, db, owner_id):
                     greeting = random.choice(greetings)
                     user = batch[0]
                     name = user.first_name or "User"
-                    tag_text = f"{greeting} <a href='tg://user?id={user.id}'>{name}</a>"
+                    tag_text = f"<blockquote>{greeting} <a href='tg://user?id={user.id}'>{name}</a></blockquote>"
                 else:
                     user = batch[0]
                     name = user.first_name or "User"
-                    tag_text = f"{message} <a href='tg://user?id={user.id}'>{name}</a>"
+                    tag_text = f"<blockquote>{message} <a href='tg://user?id={user.id}'>{name}</a></blockquote>"
                 
                 try:
                     await ether.send_message(chat_id, tag_text)

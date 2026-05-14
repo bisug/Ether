@@ -30,34 +30,16 @@ import asyncio
 
 logger = get_logger("PrivacyPlugin")
 
-# Anti-Flood Configuration
-ANTIFLOOD_ENABLED = True
-MAX_MSGS = 5
-TIME_WINDOW = 10 # seconds
 
 def setup(ether, db, owner_id):
 
     dm_service = DMService(db)
     shield_service = DMShieldService(db)
 
-    # 1. Auto-Read Feature
-    @ether.on(events.NewMessage(incoming=True))
-    async def auto_read_handler(event):
-        if not event.is_private or not Config.AUTO_READ:
-            return
-            
-        if event.sender_id == owner_id:
-            return
-            
-        try:
-            await event.mark_read()
-        except Exception as e:
-            logger.error(f"Auto-read error: {e}")
 
     # 2. Advanced Anti-Spam System
     @ether.on(events.NewMessage(incoming=True))
     async def anti_spam_handler(event):
-        global ANTIFLOOD_ENABLED
         if not event.is_private:
             return
 
@@ -72,36 +54,6 @@ def setup(ether, db, owner_id):
 
         now = time.time()
         
-        # --- PART A: Flood Detection ---
-        if ANTIFLOOD_ENABLED:
-            is_flooding = await dm_service.check_flood(user_id, TIME_WINDOW, MAX_MSGS)
-            if is_flooding:
-                logger.warning(f"Flood detected for {user_id}. Issuing warning.")
-                try:
-                    warns = await dm_service.increment_warn(user_id)
-                    max_warns = await dm_service.get_max_warns(user_id, owner_id)
-
-                    if warns >= max_warns:
-                        await ether(functions.contacts.BlockRequest(id=user_id))
-                        await dm_service.temp_block_user(user_id, Config.TEMP_BAN_DURATION)
-                        await event.reply(f"<blockquote><b>Final Warning!</b>\n\nYou have been temporarily blocked for {Config.TEMP_BAN_DURATION // 3600} hours after {warns} flood violations.</blockquote>")
-                        
-                        # LOG TO BOT
-                        user = await event.get_sender()
-                        name = f"@{user.username}" if user.username else user.first_name
-                        log_text = (
-                            "<b>SECURITY ALERT: Flood Limit Reached</b>\n\n"
-                            f"<b>User:</b> {name} (<code>{user_id}</code>)\n"
-                            f"<b>Reason:</b> Repeated flooding ({warns}/{max_warns})\n"
-                            f"<b>Action:</b> Temporary Ban ({Config.TEMP_BAN_DURATION // 3600}h)"
-                        )
-                        await send_log(f"<blockquote>{log_text}</blockquote>", buttons=[[Button.url("View Profile", f"tg://user?id={user_id}")]])
-                    else:
-                        await event.reply(f"<blockquote><b>SYSTEM WARNING: Flood {warns}/{max_warns}</b>\n\nPlease stop spamming or you will be blocked.</blockquote>")
-                except Exception as e:
-                    logger.error(f"Flood warning error: {e}")
-                return
-
         # --- PART B: Link/Media Shield for Unknown Users ---
         shield_settings = await shield_service.get(user_id)
         
@@ -121,51 +73,13 @@ def setup(ether, db, owner_id):
 
         if is_spammy:
             try:
-                warns = await dm_service.increment_warn(user_id)
-                max_warns = await dm_service.get_max_warns(user_id, owner_id)
-                
-                if warns >= max_warns:
-                    await ether(functions.contacts.BlockRequest(id=user_id))
-                    await dm_service.temp_block_user(user_id, Config.TEMP_BAN_DURATION)
-                    await event.delete()
-                    
-                    # LOG TO BOT
-                    user = await event.get_sender()
-                    name = f"@{user.username}" if user.username else user.first_name
-                    log_text = (
-                        "<b>SECURITY ALERT: Spam Shield Triggered</b>\n\n"
-                        f"<b>User:</b> {name} (<code>{user_id}</code>)\n"
-                        f"<b>Reason:</b> {reason} ({warns}/{max_warns})\n"
-                        f"<b>Action:</b> Temporary Ban ({Config.TEMP_BAN_DURATION // 3600}h)"
-                    )
-                    await send_log(f"<blockquote>{log_text}</blockquote>", buttons=[[Button.url("View Profile", f"tg://user?id={user_id}")]])
-                else:
-                    await event.delete() # Still delete the spammy message
-                    await event.respond(f"<blockquote><b>SYSTEM WARNING: Spam {warns}/{max_warns}</b>\n\n{reason}s are not allowed from unverified users.</blockquote>")
+                await event.delete()
+                logger.info(f"Silent Shield: Deleted {reason} from {user_id}")
             except Exception as e:
-                logger.error(f"Spam shield warning error: {e}")
+                logger.error(f"Spam shield delete error: {e}")
             return
 
     # 3. Privacy Commands
-    @ether.on(events.NewMessage(pattern=r"^\.autoread\s+(on|off)$", outgoing=True))
-    async def toggle_autoread(event):
-        if event.sender_id != owner_id:
-            return
-            
-        mode = event.pattern_match.group(1).lower()
-        Config.AUTO_READ = (mode == "on")
-        
-        await event.edit(f"<blockquote><b>Auto-Read:</b> <code>{mode.upper()}</code>\n\nIncoming messages will now be marked as read.</blockquote>")
-
-    @ether.on(events.NewMessage(pattern=r"^\.antiflood\s+(on|off)$", outgoing=True))
-    async def toggle_antiflood(event):
-        global ANTIFLOOD_ENABLED
-        if event.sender_id != owner_id:
-            return
-        cmd = event.pattern_match.group(1).lower()
-        ANTIFLOOD_ENABLED = (cmd == "on")
-        status = "ENABLED" if ANTIFLOOD_ENABLED else "DISABLED"
-        await event.edit(f"<blockquote><b>Anti-Flood:</b> {status}</blockquote>")
 
     # 4. Background Unblocker Task
     async def unblock_task():
@@ -197,4 +111,4 @@ def setup(ether, db, owner_id):
     from utils.task_helper import safe_run
     safe_run(unblock_task(), name="AutoUnblocker")
 
-    logger.info("Privacy plugin loaded (Anti-flood & Temp-ban active)")
+    logger.info("Privacy plugin loaded (Temp-ban active)")

@@ -96,7 +96,6 @@ main_buttons = [
         Button.inline("System Info", b"help_system")
     ],
     [
-        Button.inline("Auto-Reply", b"help_auto"),
         Button.inline("Privacy & Logs", b"help_privacy")
     ]
 ]
@@ -348,21 +347,16 @@ async def cb_dm(event):
         "<b>Overview:</b>\n"
         "When someone messages you:\n"
         "• First message → Welcome message sent\n"
-        "• Follow-ups → Warning counter (max 3)\n"
-        "• After max warnings → Auto block\n\n"
+        "• Follow-ups → Silently ignored until allowed\n\n"
         "Only users you <code>.allow</code> can message freely.\n\n"
         "<b>Commands:</b>\n"
         "<code>.setwelcome</code> - Set welcome message with buttons\n"
         "<code>.clearwelcome</code> - Remove welcome message\n"
         "<code>.allow</code> - Allow user (in their DM)\n"
-        "<code>.disallow</code> - Disallow user (in their DM)\n"
-        "<code>.setwarn &lt;number&gt;</code> - Set max warnings\n\n"
-        "<b>Warning System:</b>\n"
-        "Users who aren't allowed get:\n"
-        "• Welcome on 1st message\n"
-        "• Warning X/N on follow-ups\n"
-        "• <b>Auto-block</b> at max warnings\n\n"
-        "Use <code>.setwarn &lt;number&gt;</code> to change limit"
+        "<code>.disallow</code> - Disallow user (in their DM)\n\n"
+        "<b>Status:</b>\n"
+        "Users who aren't allowed get the welcome on their first message. "
+        "Further messages are ignored to prevent spam."
         "</blockquote>",
         buttons=[[Button.inline("Back", b"help_back")]]
     )
@@ -470,15 +464,6 @@ async def cb_system(event):
 async def cb_privacy(event):
     await event.edit(
         "<blockquote>"
-        "<b>Privacy & Protection</b>\n\n"
-        "<b>Anti-Flood:</b>\n"
-        "Automatically blocks users who spam your DMs.\n"
-        "• <code>.antiflood on</code> - Enable protection\n"
-        "• <code>.antiflood off</code> - Disable protection\n\n"
-        "<b>Auto-Read:</b>\n"
-        "Marks all incoming DMs as read immediately.\n"
-        "• <code>.autoread on</code> - Enable blue ticks\n"
-        "• <code>.autoread off</code> - Disable blue ticks\n\n"
         "<b>Self-Destruct:</b>\n"
         "• <code>.sd &lt;secs&gt; &lt;text&gt;</code> - Send vanishing text"
         "</blockquote>",
@@ -1070,26 +1055,6 @@ def apply_font(text, font_key):
 
 # ============================================
 
-@bot.on(events.CallbackQuery(data=b"help_auto"))
-@owner_only
-async def cb_auto(event):
-    await event.edit(
-        "<blockquote>"
-        "<b>Auto-Reply System</b>\n\n"
-        "<b>Auto-Reply:</b>\n"
-        "The bot can automatically respond to specific keywords in DMs.\n"
-        "• <code>.autoreply \"trigger\" | response</code> - Add text\n"
-        "• <code>.autoreply trigger</code> (reply to a message) - Save media/post\n"
-        "• <code>.delreply trigger</code> - Remove\n"
-        "• <code>.replies</code> - List all active triggers\n\n"
-        "<b>Scheduler:</b>\n"
-        "Send messages after a specific delay.\n"
-        "• <code>.schedule &lt;secs&gt; | &lt;text&gt;</code>\n\n"
-        "<b>Example:</b>\n"
-        "<code>.autoreply \"hello world\" | Hey there!</code>"
-        "</blockquote>",
-        buttons=[[Button.inline("Back", b"help_back")]]
-    )
 
 # ============================================
 # Bot Class

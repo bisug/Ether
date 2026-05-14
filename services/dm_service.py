@@ -203,42 +203,4 @@ class DMService:
             return
         
         await self.config.delete_one({"owner_id": owner_id})
-
-    async def check_flood(self, user_id: int, time_window: int, max_msgs: int) -> bool:
-        """
-        Tracks flood timestamps in MongoDB.
-        Returns True if the user has exceeded the limit.
-        """
-        if self.users is None:
-            return False
-            
-        import time
-        now = time.time()
-        expiry = now - time_window
-        
-        # 1. Cleanup old timestamps and Add new one atomically
-        # We use $pull to remove old ones and $push to add the new one
-        await self.users.update_one(
-            {"user_id": user_id},
-            {
-                "$pull": {"flood_history": {"$lt": expiry}},
-            },
-            upsert=True
-        )
-        
-        result = await self.users.find_one_and_update(
-            {"user_id": user_id},
-            {
-                "$push": {
-                    "flood_history": {
-                        "$each": [now],
-                        "$slice": - (max_msgs + 1) # Keep only the most recent N+1
-                    }
-                }
-            },
-            upsert=True,
-            return_document=True
-        )
-        
-        history = result.get("flood_history", [])
-        return len(history) > max_msgs
+

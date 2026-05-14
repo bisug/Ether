@@ -45,7 +45,7 @@ def setup(ether, db, owner_id):
             await event.edit("<blockquote><b>Validation Error:</b> Time must be between 1 and 3600 seconds.</blockquote>")
             return
 
-        await event.edit(f"{content}\n\n<i>This message will self-destruct in {seconds} seconds...</i>")
+        await event.edit(f"<blockquote>{content}\n\n<i>This message will self-destruct in {seconds} seconds...</i></blockquote>")
         
         await asyncio.sleep(seconds)
         try:
@@ -85,8 +85,10 @@ def setup(ether, db, owner_id):
                     translated_text = data['responseData']['translatedText']
                     
             await event.edit(
+                f"<blockquote>"
                 f"<b>Original:</b>\n<i>{text}</i>\n\n"
                 f"<b>Translated ({lang}):</b>\n<i>{translated_text}</i>"
+                f"</blockquote>"
             )
         except Exception as e:
             logger.error(f"Translation error: {e}")
