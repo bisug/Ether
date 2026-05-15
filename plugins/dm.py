@@ -20,6 +20,7 @@
 # =============================================================================
 
 from telethon import events, Button
+from telethon.extensions import html
 from telethon.tl.functions.contacts import BlockRequest
 import re
 import os
@@ -162,8 +163,6 @@ def setup(ether, db, owner_id):
                 media_type = "photo" if ext == ".jpg" else "video"
             except Exception as e:
                 logger.error(f"Failed to download welcome document: {e}")
-        
-        from telethon.extensions import html
         
         if custom_text:
             # If user provided text in the command itself, we want to keep its formatting
