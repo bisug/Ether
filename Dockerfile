@@ -37,5 +37,4 @@ RUN mkdir -p /app/media /app/sessions /app/logs && \
 VOLUME ["/app/media", "/app/sessions", "/app/logs"]
 
 # Set the default command to run the application using uv run
-CMD ["uv", "run", "main.py"]
-
+CMD ["python3", "main.py"]
