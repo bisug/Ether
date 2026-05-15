@@ -166,8 +166,17 @@ def setup(ether, db, owner_id):
         from telethon.extensions import html
         
         if custom_text:
-            parsed_text = custom_text
+            # If user provided text in the command itself, we want to keep its formatting
+            if event.message.entities:
+                # Unparse the full message to get HTML
+                full_html = html.unparse(event.message.text, event.message.entities)
+                # Remove the ".setwelcome " prefix (including any extra spaces)
+                # We use a regex that handles the command part
+                parsed_text = re.sub(r'^\.setwelcome\s+', '', full_html, flags=re.IGNORECASE)
+            else:
+                parsed_text = custom_text
         else:
+            # Fallback to replied message text/caption
             if msg.entities:
                 parsed_text = html.unparse(msg.text, msg.entities)
             else:
