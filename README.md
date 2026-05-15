@@ -197,22 +197,78 @@ docker-compose up -d --build
 > [!TIP]
 > Using Docker Compose handles the health checks and automatic restarts for you.
 
-#### 5. Manual Setup (Linux / VPS)
-For advanced users who want full control over the environment.
+#### 5. Manual Setup (Linux / VPS / Windows)
+For users who want full control over the environment.
+
+1. **Install uv**
+   If you haven't installed `uv` on your server yet:
+   - **Linux/macOS:**
+     ```bash
+     curl -LsSf https://astral.sh/uv/install.sh | sh
+     ```
+   - **Windows:**
+     ```powershell
+     powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+     ```
+
+2. **Prepare the Project**
+   Clone your repository and enter the directory:
+   ```bash
+   git clone https://github.com/LearningBotsOfficial/Ether
+   cd Ether
+   ```
+
+3. **Setup the Environment**
+   Instead of creating a venv and activating it manually, let `uv` handle everything:
+   ```bash
+   uv sync
+   ```
+   This command will:
+   - Check if you have the correct Python version (defined in `.python-version` or `pyproject.toml`). If not, it will automatically download it.
+   - Create a `.venv` directory.
+   - Install all dependencies exactly as defined in `uv.lock`.
+
+4. **Configure Environment Variables**
+   Copy the example environment file and edit it with your credentials:
+   ```bash
+   cp .env.example .env
+   nano .env  # Or your preferred editor
+   ```
+
+5. **Run the Bot**
+   You can run the bot directly using:
+   ```bash
+   python main.py
+   ```
+
+---
+
+### Managing Dependencies & Upgrading
+
+`uv` uses a lockfile (`uv.lock`) to ensure that your environment is always reproducible.
+
+#### Adding or Removing Packages
+To add a new library:
 ```bash
-# Update system & install git
-sudo apt update && sudo apt install git -y
-
-# Install uv (Recommended)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Setup project
-git clone https://github.com/LearningBotsOfficial/Ether.git && cd Ether
-uv sync
-
-# Run the bot
-uv run main.py
+uv add <package-name>
 ```
+To remove a library:
+```bash
+uv remove <package-name>
+```
+
+#### Upgrading All Packages
+To upgrade all dependencies to their latest compatible versions and update the `uv.lock` file:
+```bash
+uv lock --upgrade
+```
+
+#### Syncing Environment
+Whenever you pull new changes from GitHub that include an updated `uv.lock`, simply run:
+```bash
+uv sync
+```
+This ensures your local `.venv` matches the project's requirements perfectly.
 
 ---
 
