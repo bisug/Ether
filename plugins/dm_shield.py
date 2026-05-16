@@ -43,6 +43,16 @@ def setup(ether, db, owner_id):
     
         if event.sender_id == owner_id:
             return
+
+        # Skip bots
+        if event.sender and getattr(event.sender, 'bot', False):
+            return
+        try:
+            sender = await event.get_sender()
+            if sender and getattr(sender, 'bot', False):
+                return
+        except Exception:
+            pass
     
         settings = await shield.get(owner_id)
     
